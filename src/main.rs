@@ -1,6 +1,7 @@
 use std::{
-    fmt::{write, Display},
-    io, panic,
+    fmt::Display,
+    io::{self, Write},
+    panic,
 };
 
 fn main()
@@ -13,6 +14,34 @@ fn main()
 }
 
 struct HumanPlayer;
+
+fn read_number(max: usize) -> Option<usize>
+{
+    print!("Enter an integer in the range [0, {}): ", max);
+
+    std::io::stdout().flush().unwrap();
+
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input)
+    {
+        Ok(_) =>
+        {
+            let index = input.trim().parse::<usize>();
+            println!("{:?}", index);
+            if let Ok(index) = index
+            {
+                if index < max
+                {
+                    return Some(index);
+                }
+            };
+        },
+        Err(_) =>
+        {},
+    };
+
+    None
+}
 
 impl Player for HumanPlayer
 {
@@ -28,12 +57,13 @@ impl Player for HumanPlayer
             println!("    {}: {}", i, m);
         }
 
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("invalid input");
-
-        let input: usize = input.trim().parse().expect("invalid input");
-
-        return moves[input];
+        loop
+        {
+            if let Some(index) = read_number(moves.len())
+            {
+                return moves[index];
+            }
+        }
     }
 }
 
@@ -55,7 +85,7 @@ impl TicTacToe
             last_move: None,
             rows,
             cols,
-            num_to_win
+            num_to_win,
         }
     }
 
@@ -167,7 +197,7 @@ impl GameState for TicTacToe
         {
             let mut consecutive = 0;
             let mut new_pos = last_move.position;
-            
+
             while self.board[self.p2i(&new_pos)] == player
             {
                 consecutive += 1;
@@ -176,15 +206,17 @@ impl GameState for TicTacToe
                 {
                     return player.try_into().unwrap();
                 }
-                
+
                 let irow: i32 = new_pos.row.try_into().unwrap();
                 let icol: i32 = new_pos.col.try_into().unwrap();
 
                 let new_row = irow + dir.0;
                 let new_col = icol + dir.1;
 
-                if new_row < 0 || new_row >= self.rows.try_into().unwrap() 
-                || new_col < 0 || new_col >= self.cols.try_into().unwrap()
+                if new_row < 0
+                    || new_row >= self.rows.try_into().unwrap()
+                    || new_col < 0
+                    || new_col >= self.cols.try_into().unwrap()
                 {
                     break;
                 }
@@ -203,15 +235,17 @@ impl GameState for TicTacToe
                 {
                     return player.try_into().unwrap();
                 }
-                
+
                 let irow: i32 = new_pos.row.try_into().unwrap();
                 let icol: i32 = new_pos.col.try_into().unwrap();
 
                 let new_row = irow - dir.0;
                 let new_col = icol - dir.1;
 
-                if new_row < 0 || new_row >= self.rows.try_into().unwrap() 
-                || new_col < 0 || new_col >= self.cols.try_into().unwrap()
+                if new_row < 0
+                    || new_row >= self.rows.try_into().unwrap()
+                    || new_col < 0
+                    || new_col >= self.cols.try_into().unwrap()
                 {
                     break;
                 }
@@ -272,7 +306,7 @@ where
     Game: GameState,
     Game::Move: Display,
 {
-    for i in 0..iterations
+    for _ in 0..iterations
     {
         play(game, p1, p2);
     }
