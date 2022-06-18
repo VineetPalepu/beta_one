@@ -36,6 +36,20 @@ impl TicTacToe
     }
 }
 
+impl Clone for TicTacToe
+{
+    fn clone(&self) -> Self
+    {
+        Self {
+            board: self.board.clone(),
+            last_move: self.last_move.clone(),
+            rows: self.rows.clone(),
+            cols: self.cols.clone(),
+            num_to_win: self.num_to_win.clone(),
+        }
+    }
+}
+
 impl super::GameState for TicTacToe
 {
     type Move = TicTacToeMove;

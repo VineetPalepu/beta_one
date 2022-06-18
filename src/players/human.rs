@@ -43,7 +43,7 @@ fn read_number(max: usize) -> Option<usize>
         {
             let index = input.trim().parse::<usize>();
             //println!("{:?}", index);
-            
+
             if let Ok(index) = index
             {
                 if index < max
