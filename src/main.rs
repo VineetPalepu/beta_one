@@ -1,20 +1,25 @@
-use std::{fmt::Display, panic};
+use std::fmt::Display;
 
 mod games;
 mod players;
 
 use games::GameState;
+use games::tictactoe::{TicTacToe, Position, TicTacToeMove};
 use players::Player;
+use players::human::HumanPlayer;
+use players::random::RandomPlayer;
 
 fn main()
 {
-    let mut game = games::tictactoe::TicTacToe::new(3, 3, 3);
-    let p1 = players::random::RandomPlayer {};
-    let p2 = players::random::RandomPlayer {};
+    let mut game = TicTacToe::new(3, 3, 3);
+    let p1 = RandomPlayer {};
+    let p2 = RandomPlayer {};
+
+    game.do_move(TicTacToeMove::new(Position::new(1, 1), 1));
 
     //play(&mut game, &p1, &p2);
 
-    benchmark_players(&mut game, &p1, &p2, 1000);
+    benchmark_players(&game, &p1, &p2, 1000);
 }
 
 fn benchmark_players<Game>(game: &Game, p1: &impl Player, p2: &impl Player, iterations: u32)

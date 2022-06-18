@@ -37,24 +37,20 @@ fn read_number(max: usize) -> Option<usize>
     io::stdout().flush().unwrap();
 
     let mut input = String::new();
-    match io::stdin().read_line(&mut input)
-    {
-        Ok(_) =>
-        {
-            let index = input.trim().parse::<usize>();
-            //println!("{:?}", index);
 
-            if let Ok(index) = index
+    if io::stdin().read_line(&mut input).is_ok()
+    {
+        let index = input.trim().parse::<usize>();
+        //println!("{:?}", index);
+
+        if let Ok(index) = index
+        {
+            if index < max
             {
-                if index < max
-                {
-                    return Some(index);
-                }
-            };
-        },
-        Err(_) =>
-        {},
-    };
+                return Some(index);
+            }
+        };
+    }
 
     None
 }

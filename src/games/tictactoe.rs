@@ -42,10 +42,10 @@ impl Clone for TicTacToe
     {
         Self {
             board: self.board.clone(),
-            last_move: self.last_move.clone(),
-            rows: self.rows.clone(),
-            cols: self.cols.clone(),
-            num_to_win: self.num_to_win.clone(),
+            last_move: self.last_move,
+            rows: self.rows,
+            cols: self.cols,
+            num_to_win: self.num_to_win,
         }
     }
 }
@@ -99,13 +99,13 @@ impl super::GameState for TicTacToe
 
     fn check_win(&self) -> i32
     {
-        if let None = self.last_move
+        if self.last_move.is_none()
         {
             return -1;
         }
         let last_move = self.last_move.unwrap();
 
-        let game_over = self.get_valid_moves().len() == 0;
+        let game_over = self.get_valid_moves().is_empty();
 
         let player = last_move.player;
 
@@ -202,6 +202,14 @@ pub struct TicTacToeMove
     player: u32,
 }
 
+impl TicTacToeMove
+{
+    pub fn new(position: Position, player: u32) -> TicTacToeMove
+    {
+        TicTacToeMove { position, player }
+    }
+}
+
 impl Display for TicTacToeMove
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
@@ -211,10 +219,18 @@ impl Display for TicTacToeMove
 }
 
 #[derive(Copy, Clone)]
-struct Position
+pub struct Position
 {
     row: usize,
     col: usize,
+}
+
+impl Position
+{
+    pub fn new(row: usize, col: usize) -> Position
+    {
+        Position { row, col }
+    }
 }
 
 impl Display for Position
