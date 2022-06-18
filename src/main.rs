@@ -1,7 +1,4 @@
-use std::{
-    fmt::Display,
-    panic,
-};
+use std::{fmt::Display, panic};
 
 mod games;
 mod players;
