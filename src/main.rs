@@ -1,304 +1,329 @@
 use std::{
     fmt::Display,
-    io::{self, Write},
     panic,
 };
 
+use games::GameState;
+use players::Player;
+
 fn main()
 {
-    let mut game = TicTacToe::new(3, 3, 3);
-    let p1 = HumanPlayer {};
-    let p2 = HumanPlayer {};
+    let mut game = games::tictactoe::TicTacToe::new(3, 3, 3);
+    let p1 = players::human::HumanPlayer {};
+    let p2 = players::human::HumanPlayer {};
 
     play(&mut game, &p1, &p2);
 }
 
-struct HumanPlayer;
-
-fn read_number(max: usize) -> Option<usize>
+mod players
 {
-    print!("Enter an integer in the range [0, {}): ", max);
+    use crate::games::GameState;
+    use std::fmt::Display;
 
-    std::io::stdout().flush().unwrap();
-
-    let mut input = String::new();
-    match io::stdin().read_line(&mut input)
+    pub trait Player
     {
-        Ok(_) =>
+        fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
+        where
+            Game: GameState,
+            Game::Move: Display;
+    }
+
+    pub mod human
+    {
+        use super::Player;
+        use crate::games::GameState;
+
+        use std::fmt::Display;
+        use std::io::{self, Write};
+
+        pub struct HumanPlayer;
+
+        impl Player for HumanPlayer
         {
-            let index = input.trim().parse::<usize>();
-            println!("{:?}", index);
-            if let Ok(index) = index
+            fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
+            where
+                Game: GameState,
+                Game::Move: Display,
             {
-                if index < max
+                let moves = game_state.get_valid_moves();
+                println!("{} Moves: ", moves.len());
+                for (i, m) in moves.iter().enumerate()
                 {
-                    return Some(index);
+                    println!("    {}: {}", i, m);
                 }
+
+                loop
+                {
+                    if let Some(index) = read_number(moves.len())
+                    {
+                        return moves[index];
+                    }
+                }
+            }
+        }
+
+        fn read_number(max: usize) -> Option<usize>
+        {
+            print!("Enter an integer in the range [0, {}): ", max);
+
+            io::stdout().flush().unwrap();
+
+            let mut input = String::new();
+            match io::stdin().read_line(&mut input)
+            {
+                Ok(_) =>
+                {
+                    let index = input.trim().parse::<usize>();
+                    println!("{:?}", index);
+                    if let Ok(index) = index
+                    {
+                        if index < max
+                        {
+                            return Some(index);
+                        }
+                    };
+                },
+                Err(_) =>
+                {},
             };
-        },
-        Err(_) =>
-        {},
-    };
 
-    None
+            None
+        }
+    }
 }
 
-impl Player for HumanPlayer
+mod games
 {
-    fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
-    where
-        Game: GameState,
-        Game::Move: Display,
+    pub trait GameState
     {
-        let moves = game_state.get_valid_moves();
-        println!("{} Moves: ", moves.len());
-        for (i, m) in moves.iter().enumerate()
+        type Move: Copy;
+
+        fn get_valid_moves(&self) -> Vec<Self::Move>;
+
+        fn get_current_player(&self) -> u32;
+
+        fn do_move(&mut self, m: Self::Move);
+
+        fn check_win(&self) -> i32;
+
+        fn print_state(&self);
+    }
+
+    pub mod tictactoe
+    {
+        use std::fmt::Display;
+
+        pub struct TicTacToe
         {
-            println!("    {}: {}", i, m);
+            board: Vec<u32>,
+            last_move: Option<TicTacToeMove>,
+            rows: usize,
+            cols: usize,
+            num_to_win: usize,
         }
 
-        loop
+        impl TicTacToe
         {
-            if let Some(index) = read_number(moves.len())
+            pub fn new(rows: usize, cols: usize, num_to_win: usize) -> TicTacToe
             {
-                return moves[index];
+                TicTacToe {
+                    board: vec![0; rows * cols],
+                    last_move: None,
+                    rows,
+                    cols,
+                    num_to_win,
+                }
             }
-        }
-    }
-}
 
-struct TicTacToe
-{
-    board: Vec<u32>,
-    last_move: Option<TicTacToeMove>,
-    rows: usize,
-    cols: usize,
-    num_to_win: usize,
-}
-
-impl TicTacToe
-{
-    fn new(rows: usize, cols: usize, num_to_win: usize) -> TicTacToe
-    {
-        TicTacToe {
-            board: vec![0; rows * cols],
-            last_move: None,
-            rows,
-            cols,
-            num_to_win,
-        }
-    }
-
-    fn i2p(&self, index: usize) -> Position
-    {
-        Position {
-            row: index / self.cols,
-            col: index % self.cols,
-        }
-    }
-
-    fn p2i(&self, position: &Position) -> usize
-    {
-        position.row * self.cols + position.col
-    }
-}
-
-// TODO: Move into same module as TicTacToe Game for encapsulation
-#[derive(Copy, Clone)]
-struct TicTacToeMove
-{
-    position: Position,
-    player: u32,
-}
-
-#[derive(Copy, Clone)]
-struct Position
-{
-    row: usize,
-    col: usize,
-}
-
-impl Display for Position
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        write!(f, "({}, {})", self.row, self.col)
-    }
-}
-
-impl Display for TicTacToeMove
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        write!(f, "Player: {}, Position: {}", self.player, self.position)
-    }
-}
-
-impl GameState for TicTacToe
-{
-    type Move = TicTacToeMove;
-
-    fn get_valid_moves(&self) -> Vec<Self::Move>
-    {
-        let mut moves: Vec<Self::Move> = vec![];
-        for i in 0..self.board.len()
-        {
-            if self.board[i] == 0
+            fn i2p(&self, index: usize) -> Position
             {
-                moves.push(TicTacToeMove {
-                    position: self.i2p(i),
-                    player: self.get_current_player(),
-                });
+                Position {
+                    row: index / self.cols,
+                    col: index % self.cols,
+                }
+            }
+
+            fn p2i(&self, position: &Position) -> usize
+            {
+                position.row * self.cols + position.col
             }
         }
 
-        moves
-    }
-
-    fn get_current_player(&self) -> u32
-    {
-        match &self.last_move
+        impl super::GameState for TicTacToe
         {
-            Some(last_move) =>
+            type Move = TicTacToeMove;
+
+            fn get_valid_moves(&self) -> Vec<Self::Move>
             {
-                if last_move.player == 1
+                let mut moves: Vec<Self::Move> = vec![];
+                for i in 0..self.board.len()
                 {
-                    2
-                }
-                else
-                {
-                    1
-                }
-            },
-            None => 1,
-        }
-    }
-
-    fn do_move(&mut self, m: Self::Move)
-    {
-        let index = self.p2i(&m.position);
-        self.board[index] = m.player;
-        self.last_move = Some(m);
-    }
-
-    fn check_win(&self) -> i32
-    {
-        if let None = self.last_move
-        {
-            return -1;
-        }
-        let last_move = self.last_move.unwrap();
-
-        let game_over = self.get_valid_moves().len() == 0;
-
-        let player = last_move.player;
-
-        for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
-        {
-            let mut consecutive = 0;
-            let mut new_pos = last_move.position;
-
-            while self.board[self.p2i(&new_pos)] == player
-            {
-                consecutive += 1;
-
-                if consecutive >= self.num_to_win
-                {
-                    return player.try_into().unwrap();
+                    if self.board[i] == 0
+                    {
+                        moves.push(TicTacToeMove {
+                            position: self.i2p(i),
+                            player: self.get_current_player(),
+                        });
+                    }
                 }
 
-                let irow: i32 = new_pos.row.try_into().unwrap();
-                let icol: i32 = new_pos.col.try_into().unwrap();
-
-                let new_row = irow + dir.0;
-                let new_col = icol + dir.1;
-
-                if new_row < 0
-                    || new_row >= self.rows.try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= self.cols.try_into().unwrap()
-                {
-                    break;
-                }
-
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
+                moves
             }
 
-            consecutive -= 1;
-            new_pos = last_move.position;
-
-            while self.board[self.p2i(&new_pos)] == player
+            fn get_current_player(&self) -> u32
             {
-                consecutive += 1;
-                if consecutive >= self.num_to_win
+                match &self.last_move
                 {
-                    return player.try_into().unwrap();
+                    Some(last_move) =>
+                    {
+                        if last_move.player == 1
+                        {
+                            2
+                        }
+                        else
+                        {
+                            1
+                        }
+                    },
+                    None => 1,
+                }
+            }
+
+            fn do_move(&mut self, m: Self::Move)
+            {
+                let index = self.p2i(&m.position);
+                self.board[index] = m.player;
+                self.last_move = Some(m);
+            }
+
+            fn check_win(&self) -> i32
+            {
+                if let None = self.last_move
+                {
+                    return -1;
+                }
+                let last_move = self.last_move.unwrap();
+
+                let game_over = self.get_valid_moves().len() == 0;
+
+                let player = last_move.player;
+
+                for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
+                {
+                    let mut consecutive = 0;
+                    let mut new_pos = last_move.position;
+
+                    while self.board[self.p2i(&new_pos)] == player
+                    {
+                        consecutive += 1;
+
+                        if consecutive >= self.num_to_win
+                        {
+                            return player.try_into().unwrap();
+                        }
+
+                        let irow: i32 = new_pos.row.try_into().unwrap();
+                        let icol: i32 = new_pos.col.try_into().unwrap();
+
+                        let new_row = irow + dir.0;
+                        let new_col = icol + dir.1;
+
+                        if new_row < 0
+                            || new_row >= self.rows.try_into().unwrap()
+                            || new_col < 0
+                            || new_col >= self.cols.try_into().unwrap()
+                        {
+                            break;
+                        }
+
+                        new_pos.col = new_col.try_into().unwrap();
+                        new_pos.row = new_row.try_into().unwrap();
+                    }
+
+                    consecutive -= 1;
+                    new_pos = last_move.position;
+
+                    while self.board[self.p2i(&new_pos)] == player
+                    {
+                        consecutive += 1;
+                        if consecutive >= self.num_to_win
+                        {
+                            return player.try_into().unwrap();
+                        }
+
+                        let irow: i32 = new_pos.row.try_into().unwrap();
+                        let icol: i32 = new_pos.col.try_into().unwrap();
+
+                        let new_row = irow - dir.0;
+                        let new_col = icol - dir.1;
+
+                        if new_row < 0
+                            || new_row >= self.rows.try_into().unwrap()
+                            || new_col < 0
+                            || new_col >= self.cols.try_into().unwrap()
+                        {
+                            break;
+                        }
+
+                        new_pos.col = new_col.try_into().unwrap();
+                        new_pos.row = new_row.try_into().unwrap();
+                    }
                 }
 
-                let irow: i32 = new_pos.row.try_into().unwrap();
-                let icol: i32 = new_pos.col.try_into().unwrap();
-
-                let new_row = irow - dir.0;
-                let new_col = icol - dir.1;
-
-                if new_row < 0
-                    || new_row >= self.rows.try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= self.cols.try_into().unwrap()
+                if game_over
                 {
-                    break;
+                    return 0;
                 }
 
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
+                -1
+            }
+
+            fn print_state(&self)
+            {
+                for i in 0..self.rows
+                {
+                    for j in 0..self.cols
+                    {
+                        let index = self.p2i(&Position { row: i, col: j });
+                        print!("{} ", self.board[index]);
+                    }
+                    println!();
+                }
+                println!();
             }
         }
 
-        if game_over
+        // Tic Tac Toe helper code
+        #[derive(Copy, Clone)]
+        pub struct TicTacToeMove
         {
-            return 0;
+            position: Position,
+            player: u32,
         }
 
-        -1
-    }
-
-    fn print_state(&self)
-    {
-        for i in 0..self.rows
+        impl Display for TicTacToeMove
         {
-            for j in 0..self.cols
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
             {
-                let index = self.p2i(&Position { row: i, col: j });
-                print!("{} ", self.board[index]);
+                write!(f, "Player: {}, Position: {}", self.player, self.position)
             }
-            println!();
         }
-        println!();
+
+        #[derive(Copy, Clone)]
+        struct Position
+        {
+            row: usize,
+            col: usize,
+        }
+
+        impl Display for Position
+        {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+            {
+                write!(f, "({}, {})", self.row, self.col)
+            }
+        }
     }
-}
-
-trait Player
-{
-    fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
-    where
-        Game: GameState,
-        Game::Move: Display;
-}
-
-trait GameState
-{
-    type Move: Copy;
-
-    fn get_valid_moves(&self) -> Vec<Self::Move>;
-
-    fn get_current_player(&self) -> u32;
-
-    fn do_move(&mut self, m: Self::Move);
-
-    fn check_win(&self) -> i32;
-
-    fn print_state(&self);
 }
 
 fn benchmark_players<Game>(game: &mut Game, p1: &impl Player, p2: &impl Player, iterations: u32)
