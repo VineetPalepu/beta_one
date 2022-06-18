@@ -1,7 +1,9 @@
-use crate::games::GameState;
 use std::fmt::Display;
 
+use crate::games::GameState;
+
 pub mod human;
+pub mod random;
 
 pub trait Player
 {

@@ -1,8 +1,8 @@
-use super::Player;
-use crate::games::GameState;
-
 use std::fmt::Display;
 use std::io::{self, Write};
+
+use super::Player;
+use crate::games::GameState;
 
 pub struct HumanPlayer;
 
@@ -42,7 +42,8 @@ fn read_number(max: usize) -> Option<usize>
         Ok(_) =>
         {
             let index = input.trim().parse::<usize>();
-            println!("{:?}", index);
+            //println!("{:?}", index);
+            
             if let Ok(index) = index
             {
                 if index < max

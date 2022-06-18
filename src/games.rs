@@ -1,6 +1,8 @@
+use crate::players::Player;
+
 pub mod tictactoe;
 
-pub trait GameState
+pub trait GameState: Clone
 {
     type Move: Copy;
 
@@ -13,4 +15,11 @@ pub trait GameState
     fn check_win(&self) -> i32;
 
     fn print_state(&self);
+
+    
+    fn play(&mut self, p1: &impl Player, p2: &impl Player) -> i32
+    {
+        
+        todo!();
+    }
 }
