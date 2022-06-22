@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use super::GameResult;
+
 pub struct TicTacToe
 {
     board: Vec<u32>,
@@ -81,7 +83,7 @@ impl super::GameState for TicTacToe
             {
                 moves.push(TicTacToeMove {
                     position: self.i2p(i),
-                    player: self.get_current_player(),
+                    player: self.player_to_move(),
                 });
             }
         }
@@ -89,7 +91,7 @@ impl super::GameState for TicTacToe
         moves
     }
 
-    fn get_current_player(&self) -> u32
+    fn player_to_move(&self) -> u32
     {
         match &self.last_move
         {
@@ -115,11 +117,11 @@ impl super::GameState for TicTacToe
         self.last_move = Some(m);
     }
 
-    fn check_win(&self) -> i32
+    fn check_win(&self) -> GameResult
     {
         if self.last_move.is_none()
         {
-            return -1;
+            return GameResult::InProgress;
         }
         let last_move = self.last_move.unwrap();
 
@@ -138,7 +140,15 @@ impl super::GameState for TicTacToe
 
                 if consecutive >= self.num_to_win
                 {
-                    return player.try_into().unwrap();
+                    if player == 1
+                    {
+                        return GameResult::P1Win;
+                    }
+                    else
+                    {
+                        assert_eq!(player, 2);
+                        return GameResult::P2Win;
+                    }
                 }
 
                 let irow: i32 = new_pos.row.try_into().unwrap();
@@ -167,7 +177,15 @@ impl super::GameState for TicTacToe
                 consecutive += 1;
                 if consecutive >= self.num_to_win
                 {
-                    return player.try_into().unwrap();
+                    if player == 1
+                    {
+                        return GameResult::P1Win;
+                    }
+                    else
+                    {
+                        assert_eq!(player, 2);
+                        return GameResult::P2Win;
+                    }
                 }
 
                 let irow: i32 = new_pos.row.try_into().unwrap();
@@ -191,10 +209,10 @@ impl super::GameState for TicTacToe
 
         if game_over
         {
-            return 0;
+            return GameResult::Draw;
         }
 
-        -1
+        GameResult::InProgress
     }
 }
 

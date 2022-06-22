@@ -9,6 +9,8 @@ use players::Player;
 use players::human::HumanPlayer;
 use players::random::RandomPlayer;
 
+use crate::games::GameResult;
+
 fn main()
 {
     let mut game = TicTacToe::new(3, 3, 3);
@@ -48,10 +50,10 @@ where
         let winner = initial_state.play(p1, p2, false);
         match winner
         {
-            1 => p1_wins += 1,
-            2 => p2_wins += 1,
-            0 => draws += 1,
-            _ => println!("invalid winner: {}", winner),
+            GameResult::P1Win => p1_wins += 1,
+            GameResult::P2Win => p2_wins += 1,
+            GameResult::Draw => draws += 1,
+            GameResult::InProgress => {},
         }
     }
 
