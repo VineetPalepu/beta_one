@@ -4,7 +4,7 @@ use crate::players::Player;
 
 pub mod tictactoe;
 
-pub trait GameState: Clone
+pub trait GameState: Clone + Display
 {
     type Move: Copy + Display;
 
@@ -16,8 +16,6 @@ pub trait GameState: Clone
 
     fn check_win(&self) -> i32;
 
-    fn print_state(&self);
-
     fn play(&mut self, p1: &impl Player, p2: &impl Player, verbose: bool) -> i32
     {
         while self.check_win() == -1
@@ -25,8 +23,7 @@ pub trait GameState: Clone
             // Print current state
             if verbose
             {
-                println!();
-                self.print_state();
+                println!("{}", self);
             }
 
             // Let the current player pick their move
@@ -53,7 +50,7 @@ pub trait GameState: Clone
         // Print final game state
         if verbose
         {
-            self.print_state();
+            println!("{}", self);
         }
 
         // Announce winner

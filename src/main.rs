@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Display, format};
 
 mod games;
 mod players;
@@ -20,6 +20,16 @@ fn main()
     //play(&mut game, &p1, &p2);
 
     benchmark_players(&game, &p1, &p2, 1000);
+}
+
+fn println_indent<T: Display>(obj: &T, indents: usize)
+{
+    let indent_str = "\t".repeat(indents);
+    let str = obj.to_string();
+
+    let new_newline = format!("\n{}", indent_str);
+    print!("{indent_str}");
+    println!("{}", str.replace("\n", &new_newline));
 }
 
 fn benchmark_players<Game>(game: &Game, p1: &impl Player, p2: &impl Player, iterations: u32)

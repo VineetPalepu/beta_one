@@ -50,6 +50,24 @@ impl Clone for TicTacToe
     }
 }
 
+impl Display for TicTacToe
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        
+        for i in 0..self.rows
+        {
+            for j in 0..self.cols
+            {
+                let index = self.p2i(&Position { row: i, col: j });
+                write!(f, "{} ", self.board[index])?;
+            }
+            writeln!(f)?;
+        }
+
+        Ok(())
+    }
+}
+
 impl super::GameState for TicTacToe
 {
     type Move = TicTacToeMove;
@@ -177,20 +195,6 @@ impl super::GameState for TicTacToe
         }
 
         -1
-    }
-
-    fn print_state(&self)
-    {
-        for i in 0..self.rows
-        {
-            for j in 0..self.cols
-            {
-                let index = self.p2i(&Position { row: i, col: j });
-                print!("{} ", self.board[index]);
-            }
-            println!();
-        }
-        println!();
     }
 }
 
