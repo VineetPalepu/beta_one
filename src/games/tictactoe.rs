@@ -54,8 +54,8 @@ impl Clone for TicTacToe
 
 impl Display for TicTacToe
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         for i in 0..self.rows
         {
             for j in 0..self.cols
