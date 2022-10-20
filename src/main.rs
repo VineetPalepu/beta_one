@@ -1,21 +1,23 @@
-use std::fmt::{Display, format};
+use std::fmt::{format, Display};
 
 mod games;
 mod players;
 
+use games::tictactoe::{Position, TicTacToe, TicTacToeMove};
 use games::GameState;
-use games::tictactoe::{TicTacToe, Position, TicTacToeMove};
-use players::Player;
 use players::human::HumanPlayer;
+use players::mcts::MCTSPlayer;
 use players::random::RandomPlayer;
+use players::Player;
 
 use crate::games::GameResult;
 
 fn main()
 {
     let mut game = TicTacToe::new(3, 3, 3);
-    let p1 = RandomPlayer {};
+    let p1 = MCTSPlayer {};
     let p2 = RandomPlayer {};
+    let _p3 = HumanPlayer {};
 
     game.do_move(TicTacToeMove::new(Position::new(1, 1), 1));
 
@@ -53,7 +55,8 @@ where
             GameResult::P1Win => p1_wins += 1,
             GameResult::P2Win => p2_wins += 1,
             GameResult::Draw => draws += 1,
-            GameResult::InProgress => {},
+            GameResult::InProgress =>
+            {},
         }
     }
 

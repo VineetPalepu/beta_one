@@ -3,8 +3,8 @@ use std::fmt::Display;
 use crate::games::GameState;
 
 pub mod human;
-pub mod random;
 pub mod mcts;
+pub mod random;
 
 pub trait Player
 {
