@@ -1,13 +1,13 @@
-use std::fmt::{Display, format};
+use std::fmt::{format, Display};
 
 mod games;
 mod players;
 
+use games::tictactoe::{Position, TicTacToe, TicTacToeMove};
 use games::GameState;
-use games::tictactoe::{TicTacToe, Position, TicTacToeMove};
-use players::Player;
 use players::human::HumanPlayer;
 use players::random::RandomPlayer;
+use players::Player;
 
 use crate::games::GameResult;
 
@@ -53,7 +53,8 @@ where
             GameResult::P1Win => p1_wins += 1,
             GameResult::P2Win => p2_wins += 1,
             GameResult::Draw => draws += 1,
-            GameResult::InProgress => {},
+            GameResult::InProgress =>
+            {},
         }
     }
 
