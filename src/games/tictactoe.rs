@@ -1,6 +1,6 @@
-use std::fmt::Display;
+use std::fmt::{self, Display, Formatter};
 
-use super::GameResult;
+use super::{GameResult, GameState};
 
 pub struct TicTacToe
 {
@@ -54,8 +54,8 @@ impl Clone for TicTacToe
 
 impl Display for TicTacToe
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
         for i in 0..self.rows
         {
             for j in 0..self.cols
@@ -70,7 +70,7 @@ impl Display for TicTacToe
     }
 }
 
-impl super::GameState for TicTacToe
+impl GameState for TicTacToe
 {
     type Move = TicTacToeMove;
 
@@ -234,7 +234,7 @@ impl TicTacToeMove
 
 impl Display for TicTacToeMove
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
         write!(f, "Player: {}, Position: {}", self.player, self.position)
     }
@@ -257,7 +257,7 @@ impl Position
 
 impl Display for Position
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
         write!(f, "({}, {})", self.row, self.col)
     }

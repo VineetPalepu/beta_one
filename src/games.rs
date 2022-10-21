@@ -74,7 +74,10 @@ pub trait GameState: Clone + Display
             }
             else
             {
-                println!("Player {} Wins!", if winner == GameResult::P1Win {1} else {2});
+                println!(
+                    "Player {} Wins!",
+                    if winner == GameResult::P1Win { 1 } else { 2 }
+                );
             }
         }
 
