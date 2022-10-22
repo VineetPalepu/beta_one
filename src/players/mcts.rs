@@ -1,10 +1,28 @@
-use std::fmt::Display;
+use std::{
+    f64::consts::{E, SQRT_2},
+    fmt::Display,
+};
 
-use crate::games::GameState;
+use rand::{seq::SliceRandom, thread_rng};
 
-use super::Player;
+use crate::games::{GameResult, GameState};
 
-pub struct MCTSPlayer;
+use self::arena_tree::{ArenaTree, Node, NodeRef};
+
+use super::{random::RandomPlayer, Player};
+
+pub struct MCTSPlayer
+{
+    iterations: usize,
+}
+
+impl MCTSPlayer
+{
+    pub fn new(iterations: usize) -> MCTSPlayer
+    {
+        MCTSPlayer { iterations }
+    }
+}
 
 impl Player for MCTSPlayer
 {
@@ -13,7 +31,159 @@ impl Player for MCTSPlayer
         Game: GameState,
         Game::Move: Display,
     {
+        let mut tree = ArenaTree::new(game_state.clone(), self.iterations);
+
+        for i in 1..self.iterations
+        {
+            let leaf = tree.select_leaf_node();
+
+            if !tree.is_node_termnial(&leaf)
+            {
+                tree.create_children_for(&leaf);
+
+                //println!("{:?}", tree.get(&leaf));
+
+                let node_to_simulate = tree
+                    .children_of(&leaf)
+                    .choose(&mut thread_rng())
+                    .unwrap()
+                    .clone();
+
+                let result = tree.simulate_node(&node_to_simulate);
+            }
+            else
+            {
+            }
+        }
+
         todo!()
+    }
+}
+
+trait GameStateTree
+{
+    fn select_leaf_node(&self) -> NodeRef;
+    fn create_children_for(&mut self, node: &NodeRef);
+    fn is_node_termnial(&self, node: &NodeRef) -> bool;
+    fn simulate_node(&mut self, node: &NodeRef) -> GameResult;
+    fn backprop_result(&mut self, node: &NodeRef, result: GameResult);
+
+    fn get_ucb_value(&self, node: &NodeRef) -> f64;
+}
+
+impl<T> GameStateTree for ArenaTree<T>
+where
+    T: GameState,
+{
+    fn select_leaf_node(&self) -> NodeRef
+    {
+        let mut node = self.root_ref();
+
+        while !self.children_of(&node).is_empty()
+        {
+            // TODO: Get max child by ucb value
+            // TEMP: Get random child
+            //node = *self.children_of(&node).choose(&mut thread_rng()).unwrap();
+            node = *self
+                .children_of(&node)
+                .iter()
+                .max_by(|n1, n2| self.get_ucb_value(n1).total_cmp(&self.get_ucb_value(n2)))
+                .unwrap();
+        }
+
+        node
+    }
+
+    fn create_children_for(&mut self, node: &NodeRef)
+    {
+        if self.get(node).expanded
+        {
+            panic!("node already expanded");
+        }
+        if !self.children_of(node).is_empty()
+        {
+            panic!("tried to expand expanded node");
+        }
+
+        let moves = self.get(node).data.get_valid_moves();
+        for m in moves
+        {
+            let mut state = self.get(node).data.clone();
+            state.do_move(m);
+            self.insert(state, node);
+        }
+    }
+
+    fn is_node_termnial(&self, node: &NodeRef) -> bool
+    {
+        self.get(node).data.check_win() != GameResult::InProgress
+    }
+
+    fn simulate_node(&mut self, node: &NodeRef) -> GameResult
+    {
+        let player = RandomPlayer;
+        self.get(node).data.clone().play(&player, &player, false)
+    }
+
+    fn backprop_result(&mut self, node: &NodeRef, result: GameResult)
+    {
+        let mut node = node.clone();
+        loop
+        {
+            let n = self.get_mut(&node);
+            n.num_plays += 1;
+
+            n.score += match &result
+            {
+                GameResult::InProgress => panic!("game should be finished"),
+                GameResult::Draw => 0.5,
+                win =>
+                {
+                    let winner = match win
+                    {
+                        GameResult::P1Win => 1,
+                        GameResult::P2Win => 2,
+                        _ => panic!("invalid state"),
+                    };
+
+                    if winner != n.data.player_to_move()
+                    {
+                        1.0
+                    }
+                    else
+                    {
+                        0.0
+                    }
+                },
+            };
+
+            node = match n.parent
+            {
+                Some(parent) => parent.clone(),
+                None => break,
+            };
+        }
+    }
+
+    fn get_ucb_value(&self, node: &NodeRef) -> f64
+    {
+        let node = self.get(node);
+        let parent = self.get(
+            &node
+                .parent
+                .expect("tried to get ucb of node with no parent"),
+        );
+
+        if node.num_plays == 0
+        {
+            return f64::INFINITY;
+        }
+
+        let value = node.score / node.num_plays as f64;
+        let C = SQRT_2 / 2.0;
+        let exploration = ((parent.num_plays as f64).log(E) / node.num_plays as f64).sqrt();
+
+        value + C * exploration
     }
 }
 
@@ -21,14 +191,16 @@ mod arena_tree
 {
     use rand::{seq::SliceRandom, thread_rng};
 
-    use self::arena_vec::{ArenaVec, NodeRef};
+    use self::arena_vec::ArenaVec;
+
+    pub use arena_vec::NodeRef;
 
     pub struct ArenaTree<T>
     {
         nodes: ArenaVec<Node<T>>,
         root: NodeRef,
     }
-    impl<T: Default + From<usize>> ArenaTree<T>
+    impl<T> ArenaTree<T>
     {
         pub fn new(root_data: T, capacity: usize) -> ArenaTree<T>
         {
@@ -37,6 +209,8 @@ mod arena_tree
                 children: vec![],
                 data: root_data,
                 expanded: false,
+                num_plays: 0,
+                score: 0.0,
             };
             let mut nodes = ArenaVec::new(capacity);
             let root = nodes.insert(node);
@@ -44,18 +218,58 @@ mod arena_tree
             ArenaTree { nodes, root }
         }
 
-        pub fn root(&mut self) -> &mut Node<T>
+        pub fn insert(&mut self, value: T, parent: &NodeRef) -> NodeRef
+        {
+            self.nodes.insert(Node {
+                parent: Some(*parent),
+                children: vec![],
+                data: value,
+                expanded: false,
+                num_plays: 0,
+                score: 0.0,
+            })
+        }
+
+        pub fn get(&self, index: &NodeRef) -> &Node<T>
+        {
+            self.nodes.get(index)
+        }
+
+        pub fn get_mut(&mut self, index: &NodeRef) -> &mut Node<T>
+        {
+            self.nodes.get_mut(index)
+        }
+
+        pub fn children_of(&self, index: &NodeRef) -> &Vec<NodeRef>
+        {
+            &self.get(index).children
+        }
+
+        pub fn root_ref(&self) -> NodeRef
+        {
+            self.root
+        }
+
+        pub fn root(&self) -> &Node<T>
+        {
+            self.nodes.get(&self.root)
+        }
+
+        pub fn root_mut(&mut self) -> &mut Node<T>
         {
             self.nodes.get_mut(&self.root)
         }
     }
 
+    #[derive(Debug)]
     pub struct Node<T>
     {
-        parent: Option<NodeRef>,
+        pub parent: Option<NodeRef>,
         children: Vec<NodeRef>,
         pub data: T,
-        expanded: bool,
+        pub num_plays: usize,
+        pub score: f64,
+        pub expanded: bool,
     }
 
     mod arena_vec
@@ -74,7 +288,7 @@ mod arena_tree
             }
         }
 
-        #[derive(Clone, Copy)]
+        #[derive(Clone, Copy, Debug)]
         pub struct NodeRef(usize);
 
         impl<T> ArenaVec<T>
