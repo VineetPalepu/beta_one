@@ -212,6 +212,11 @@ impl GameState for Connect4
 
         GameResult::InProgress
     }
+
+    fn last_move(&self) -> Option<Self::Move>
+    {
+        self.last_move
+    }
 }
 
 impl Display for Connect4
