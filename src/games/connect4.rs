@@ -6,11 +6,9 @@ use std::{
 
 use crate::games;
 
-use self::board::Board;
+use self::board::{position::Position, Board};
 
 use super::{GameResult, GameState};
-
-// TODO: Refactor
 
 #[derive(Clone)]
 pub struct Connect4
@@ -103,6 +101,9 @@ impl GameState for Connect4
         self.last_move = Some(m);
     }
 
+    // TODO: Refactor, lots of code reuse
+    // possibly generate list of positions along each direction first then check for number
+    // of consecutives found
     fn check_win(&self) -> GameResult
     {
         let last_move = match self.last_move
@@ -244,7 +245,7 @@ mod board
         ops::{Index, IndexMut},
     };
 
-    use super::Position;
+    use self::position::Position;
 
     #[derive(Clone)]
     pub struct Board<T>
@@ -310,20 +311,28 @@ mod board
             &mut self.data[index.row * self.cols + index.col]
         }
     }
-}
 
-#[derive(Clone, Copy)]
-struct Position
-{
-    row: usize,
-    col: usize,
-}
-
-impl Display for Position
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    pub mod position
     {
-        write!(f, "({}, {})", self.row, self.col)
+        use std::{
+            fmt::{self, Display, Formatter},
+            ops::Add,
+        };
+
+        #[derive(Clone, Copy)]
+        pub struct Position
+        {
+            pub row: usize,
+            pub col: usize,
+        }
+
+        impl Display for Position
+        {
+            fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+            {
+                write!(f, "({}, {})", self.row, self.col)
+            }
+        }
     }
 }
 
