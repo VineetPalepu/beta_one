@@ -6,101 +6,11 @@ use std::{
 
 use crate::games;
 
+use self::board::Board;
+
 use super::{GameResult, GameState};
 
 // TODO: Refactor
-
-#[derive(Clone)]
-struct Board<T>
-{
-    data: Vec<T>,
-    rows: usize,
-    cols: usize,
-}
-
-#[derive(Clone, Copy)]
-struct Position
-{
-    row: usize,
-    col: usize,
-}
-
-impl Display for Position
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        write!(f, "({}, {})", self.row, self.col)
-    }
-}
-
-impl<T: Default> Board<T>
-{
-    fn new(rows: usize, cols: usize) -> Board<T>
-    {
-        Board {
-            data: (0..rows * cols).map(|_| T::default()).collect(),
-            rows,
-            cols,
-        }
-    }
-}
-
-impl<T: Display> Display for Board<T>
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        for row in 0..self.rows
-        {
-            for col in 0..self.cols
-            {
-                write!(f, "{} ", self.index(Position { row, col }))?;
-            }
-            writeln!(f)?;
-        }
-
-        Ok(())
-    }
-}
-
-impl<T> Index<Position> for Board<T>
-{
-    type Output = T;
-
-    fn index(&self, index: Position) -> &Self::Output
-    {
-        &self.data[index.row * self.cols + index.col]
-    }
-}
-
-impl<T> IndexMut<Position> for Board<T>
-{
-    fn index_mut(&mut self, index: Position) -> &mut Self::Output
-    {
-        &mut self.data[index.row * self.cols + index.col]
-    }
-}
-
-#[derive(Clone, Copy, Default, PartialEq, Debug)]
-enum Piece
-{
-    #[default]
-    Empty,
-    P1,
-    P2,
-}
-
-impl Display for Piece
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        match self
-        {
-            Piece::Empty => write!(f, "0"),
-            Piece::P1 => write!(f, "1"),
-            Piece::P2 => write!(f, "2"),
-        }
-    }
-}
 
 #[derive(Clone)]
 pub struct Connect4
@@ -126,21 +36,6 @@ impl Connect4
             open_positions,
             last_move: None,
         }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Connect4Move
-{
-    position: Position,
-    player: u32,
-}
-
-impl Display for Connect4Move
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        write!(f, "Player: {}, Position: {}", self.player, self.position)
     }
 }
 
@@ -260,9 +155,9 @@ impl GameState for Connect4
                 let new_col = icol + dir.1;
 
                 if new_row < 0
-                    || new_row >= board.rows.try_into().unwrap()
+                    || new_row >= board.rows().try_into().unwrap()
                     || new_col < 0
-                    || new_col >= board.cols.try_into().unwrap()
+                    || new_col >= board.cols().try_into().unwrap()
                 {
                     break;
                 }
@@ -297,9 +192,9 @@ impl GameState for Connect4
                 let new_col = icol - dir.1;
 
                 if new_row < 0
-                    || new_row >= board.rows.try_into().unwrap()
+                    || new_row >= board.rows().try_into().unwrap()
                     || new_col < 0
-                    || new_col >= board.cols.try_into().unwrap()
+                    || new_col >= board.cols().try_into().unwrap()
                 {
                     break;
                 }
@@ -325,5 +220,131 @@ impl Display for Connect4
         write!(f, "{}", self.board)?;
 
         Ok(())
+    }
+}
+#[derive(Clone, Copy)]
+pub struct Connect4Move
+{
+    position: Position,
+    player: u32,
+}
+
+impl Display for Connect4Move
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        write!(f, "Player: {}, Position: {}", self.player, self.position)
+    }
+}
+
+mod board
+{
+    use std::{
+        fmt::{self, Display, Formatter},
+        ops::{Index, IndexMut},
+    };
+
+    use super::Position;
+
+    #[derive(Clone)]
+    pub struct Board<T>
+    {
+        data: Vec<T>,
+        rows: usize,
+        cols: usize,
+    }
+
+    impl<T: Default> Board<T>
+    {
+        pub fn new(rows: usize, cols: usize) -> Board<T>
+        {
+            Board {
+                data: (0..rows * cols).map(|_| T::default()).collect(),
+                rows,
+                cols,
+            }
+        }
+
+        pub fn rows(&self) -> usize
+        {
+            self.rows
+        }
+
+        pub fn cols(&self) -> usize
+        {
+            self.cols
+        }
+    }
+
+    impl<T: Display> Display for Board<T>
+    {
+        fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+        {
+            for row in 0..self.rows
+            {
+                for col in 0..self.cols
+                {
+                    write!(f, "{} ", self.index(Position { row, col }))?;
+                }
+                writeln!(f)?;
+            }
+
+            Ok(())
+        }
+    }
+
+    impl<T> Index<Position> for Board<T>
+    {
+        type Output = T;
+
+        fn index(&self, index: Position) -> &Self::Output
+        {
+            &self.data[index.row * self.cols + index.col]
+        }
+    }
+
+    impl<T> IndexMut<Position> for Board<T>
+    {
+        fn index_mut(&mut self, index: Position) -> &mut Self::Output
+        {
+            &mut self.data[index.row * self.cols + index.col]
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+struct Position
+{
+    row: usize,
+    col: usize,
+}
+
+impl Display for Position
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        write!(f, "({}, {})", self.row, self.col)
+    }
+}
+
+#[derive(Clone, Copy, Default, PartialEq, Debug)]
+enum Piece
+{
+    #[default]
+    Empty,
+    P1,
+    P2,
+}
+
+impl Display for Piece
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        match self
+        {
+            Piece::Empty => write!(f, "0"),
+            Piece::P1 => write!(f, "1"),
+            Piece::P2 => write!(f, "2"),
+        }
     }
 }
