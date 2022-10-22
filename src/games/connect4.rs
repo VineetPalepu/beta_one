@@ -1,9 +1,10 @@
+use core::panic;
 use std::{
     fmt::{self, Display, Formatter},
     ops::{Index, IndexMut},
 };
 
-use super::GameState;
+use super::{GameResult, GameState};
 
 #[derive(Clone)]
 struct Board<T>
@@ -128,10 +129,41 @@ impl GameState for Connect4
 
     fn do_move(&mut self, m: Self::Move)
     {
-        todo!()
+        // change board data based on move
+        self.board[m.position] = match m.player
+        {
+            1 => Piece::P1,
+            2 => Piece::P2,
+            _ => panic!("invalid player"),
+        };
+
+        let index = self
+            .open_positions
+            .iter()
+            // there is only one position open in each column so only need to check that the column matches
+            .position(|pos| pos.col == m.position.col);
+
+        let index = match index
+        {
+            Some(i) => i,
+            None => panic!("the move: {m} was not a valid move"),
+        };
+
+        // if we reach the top of the column, there are no more valid
+        // positions open, so remove the position from the vec
+        if m.position.row == 0
+        {
+            self.open_positions.swap_remove(index);
+        }
+        // otherwise, we can continue stacking pieces on top of this one, so update the
+        // position to be (row - 1, col)
+        else
+        {
+            self.open_positions[index].row -= 1;
+        }
     }
 
-    fn check_win(&self) -> super::GameResult
+    fn check_win(&self) -> GameResult
     {
         todo!()
     }
