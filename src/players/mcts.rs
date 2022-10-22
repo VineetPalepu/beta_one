@@ -17,60 +17,111 @@ impl Player for MCTSPlayer
     }
 }
 
-mod tree
+mod arena_tree
 {
-    use std::ops::Index;
+    use rand::{seq::SliceRandom, thread_rng};
 
-    #[derive(Clone, Copy)]
-    struct NodeRef(usize);
-    struct Node<T>
-    {
-        parent: Option<NodeRef>,
-        children: Vec<NodeRef>,
-        data: T,
-    }
+    use self::arena_vec::{ArenaVec, NodeRef};
 
-    struct Tree<T>
+    pub struct ArenaTree<T>
     {
-        nodes: Vec<Node<T>>,
+        nodes: ArenaVec<Node<T>>,
         root: NodeRef,
     }
-
-    impl<T> Index<NodeRef> for Tree<T>
+    impl<T: Default + From<usize>> ArenaTree<T>
     {
-        type Output = T;
-
-        fn index(&self, index: NodeRef) -> &Self::Output
+        pub fn new(root_data: T, capacity: usize) -> ArenaTree<T>
         {
-            &self.nodes[index.0].data
-        }
-    }
-
-    impl<T> Tree<T>
-    {
-        fn new(root_data: T) -> Tree<T>
-        {
-            let root = Node {
+            let node = Node {
                 parent: None,
                 children: vec![],
                 data: root_data,
+                expanded: false,
             };
-            let nodes = vec![root];
+            let mut nodes = ArenaVec::new(capacity);
+            let root = nodes.insert(node);
 
-            Tree {
-                nodes: vec![],
-                root: NodeRef(0),
+            ArenaTree { nodes, root }
+        }
+
+        pub fn root(&mut self) -> &mut Node<T>
+        {
+            self.nodes.get_mut(&self.root)
+        }
+    }
+
+    pub struct Node<T>
+    {
+        parent: Option<NodeRef>,
+        children: Vec<NodeRef>,
+        pub data: T,
+        expanded: bool,
+    }
+
+    mod arena_vec
+    {
+
+        pub struct ArenaVec<T>
+        {
+            data: Vec<Option<T>>,
+        }
+
+        impl<T> ArenaVec<T>
+        {
+            pub fn data(&self) -> &Vec<Option<T>>
+            {
+                &self.data
             }
         }
 
-        fn get_children(&self, node: NodeRef) -> &Vec<NodeRef>
-        {
-            &self.nodes[node.0].children
-        }
+        #[derive(Clone, Copy)]
+        pub struct NodeRef(usize);
 
-        fn root(&self) -> NodeRef
+        impl<T> ArenaVec<T>
         {
-            self.root
+            pub fn new(capacity: usize) -> ArenaVec<T>
+            {
+                ArenaVec {
+                    data: (0..capacity).map(|_| None).collect(),
+                }
+            }
+
+            pub fn insert(&mut self, value: T) -> NodeRef
+            {
+                let mut index_to_insert = None;
+                for i in 0..self.data.len()
+                {
+                    if self.data[i].is_none()
+                    {
+                        index_to_insert = Some(i);
+                        break;
+                    }
+                }
+
+                let index_to_insert = match index_to_insert
+                {
+                    Some(i) => i,
+                    None =>
+                    {
+                        self.data.push(None);
+                        self.data.len() - 1
+                    },
+                };
+
+                self.data[index_to_insert] = Some(value);
+
+                NodeRef(index_to_insert)
+            }
+
+            pub fn get(&self, index: &NodeRef) -> &T
+            {
+                self.data[index.0].as_ref().expect("invalid NodeRef")
+            }
+
+            pub fn get_mut(&mut self, index: &NodeRef) -> &mut T
+            {
+                self.data[index.0].as_mut().expect("invalid NodeRef")
+            }
         }
     }
 }
