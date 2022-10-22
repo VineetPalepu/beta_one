@@ -4,7 +4,11 @@ use std::{
     ops::{Index, IndexMut},
 };
 
+use crate::games;
+
 use super::{GameResult, GameState};
+
+// TODO: Refactor
 
 #[derive(Clone)]
 struct Board<T>
@@ -21,6 +25,14 @@ struct Position
     col: usize,
 }
 
+impl Display for Position
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        write!(f, "({}, {})", self.row, self.col)
+    }
+}
+
 impl<T: Default> Board<T>
 {
     fn new(rows: usize, cols: usize) -> Board<T>
@@ -30,6 +42,23 @@ impl<T: Default> Board<T>
             rows,
             cols,
         }
+    }
+}
+
+impl<T: Display> Display for Board<T>
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        for row in 0..self.rows
+        {
+            for col in 0..self.cols
+            {
+                write!(f, "{} ", self.index(Position { row, col }))?;
+            }
+            writeln!(f)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -51,7 +80,7 @@ impl<T> IndexMut<Position> for Board<T>
     }
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, PartialEq, Debug)]
 enum Piece
 {
     #[default]
@@ -60,8 +89,21 @@ enum Piece
     P2,
 }
 
+impl Display for Piece
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        match self
+        {
+            Piece::Empty => write!(f, "0"),
+            Piece::P1 => write!(f, "1"),
+            Piece::P2 => write!(f, "2"),
+        }
+    }
+}
+
 #[derive(Clone)]
-struct Connect4
+pub struct Connect4
 {
     board: Board<Piece>,
     num_to_win: usize,
@@ -71,7 +113,7 @@ struct Connect4
 
 impl Connect4
 {
-    fn new(rows: usize, cols: usize, num_to_win: usize) -> Connect4
+    pub fn new(rows: usize, cols: usize, num_to_win: usize) -> Connect4
     {
         let board = Board::new(rows, cols);
         let open_positions = (0..cols)
@@ -88,7 +130,7 @@ impl Connect4
 }
 
 #[derive(Clone, Copy)]
-struct Connect4Move
+pub struct Connect4Move
 {
     position: Position,
     player: u32,
@@ -98,7 +140,7 @@ impl Display for Connect4Move
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
-        todo!()
+        write!(f, "Player: {}, Position: {}", self.player, self.position)
     }
 }
 
@@ -161,11 +203,118 @@ impl GameState for Connect4
         {
             self.open_positions[index].row -= 1;
         }
+
+        // update the last_move so that all other logic works
+        self.last_move = Some(m);
     }
 
     fn check_win(&self) -> GameResult
     {
-        todo!()
+        let last_move = match self.last_move
+        {
+            Some(m) => m,
+            None => return GameResult::InProgress,
+        };
+
+        let player = match &last_move.player
+        {
+            1 => Piece::P1,
+            2 => Piece::P2,
+            _ => panic!("invalid player"),
+        };
+
+        let board = &self.board;
+
+        for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
+        {
+            let mut consecutive = 0;
+            let mut new_pos = last_move.position;
+
+            while board[new_pos] == player
+            {
+                consecutive += 1;
+
+                if consecutive >= self.num_to_win
+                {
+                    if player == Piece::P1
+                    {
+                        return GameResult::P1Win;
+                    }
+                    else
+                    {
+                        debug_assert_eq!(player, Piece::P2);
+                        return GameResult::P2Win;
+                    }
+                }
+
+                let irow: i32 = new_pos
+                    .row
+                    .try_into()
+                    .expect("couldn't convert index to integer");
+                let icol: i32 = new_pos
+                    .col
+                    .try_into()
+                    .expect("couldn't convert index to integer");
+
+                let new_row = irow + dir.0;
+                let new_col = icol + dir.1;
+
+                if new_row < 0
+                    || new_row >= board.rows.try_into().unwrap()
+                    || new_col < 0
+                    || new_col >= board.cols.try_into().unwrap()
+                {
+                    break;
+                }
+
+                new_pos.col = new_col.try_into().unwrap();
+                new_pos.row = new_row.try_into().unwrap();
+            }
+
+            consecutive -= 1;
+            new_pos = last_move.position;
+
+            while board[new_pos] == player
+            {
+                consecutive += 1;
+                if consecutive >= self.num_to_win
+                {
+                    if player == Piece::P1
+                    {
+                        return GameResult::P1Win;
+                    }
+                    else
+                    {
+                        debug_assert_eq!(player, Piece::P2);
+                        return GameResult::P2Win;
+                    }
+                }
+
+                let irow: i32 = new_pos.row.try_into().unwrap();
+                let icol: i32 = new_pos.col.try_into().unwrap();
+
+                let new_row = irow - dir.0;
+                let new_col = icol - dir.1;
+
+                if new_row < 0
+                    || new_row >= board.rows.try_into().unwrap()
+                    || new_col < 0
+                    || new_col >= board.cols.try_into().unwrap()
+                {
+                    break;
+                }
+
+                new_pos.col = new_col.try_into().unwrap();
+                new_pos.row = new_row.try_into().unwrap();
+            }
+        }
+
+        if self.get_valid_moves().is_empty()
+        {
+            return GameResult::Draw;
+        }
+
+        GameResult::InProgress
     }
 }
 
@@ -173,6 +322,8 @@ impl Display for Connect4
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
-        todo!()
+        write!(f, "{}", self.board)?;
+
+        Ok(())
     }
 }

@@ -3,6 +3,7 @@ use std::fmt::{format, Display};
 mod games;
 mod players;
 
+use games::connect4::Connect4;
 use games::tictactoe::{Position, TicTacToe, TicTacToeMove};
 use games::GameState;
 use players::human::HumanPlayer;
@@ -14,14 +15,16 @@ use crate::games::GameResult;
 fn main()
 {
     let mut game = TicTacToe::new(3, 3, 3);
-    let p1 = RandomPlayer {};
+    let mut game = Connect4::new(6, 7, 4);
+
+    let p1 = HumanPlayer {};
     let p2 = RandomPlayer {};
 
-    game.do_move(TicTacToeMove::new(Position::new(1, 1), 1));
+    //game.do_move(TicTacToeMove::new(Position::new(1, 1), 1));
 
-    //play(&mut game, &p1, &p2);
+    game.play(&p1, &p1, true);
 
-    benchmark_players(&game, &p1, &p2, 1000);
+    //benchmark_players(&game, &p1, &p2, 1000);
 }
 
 fn println_indent<T: Display>(obj: &T, indents: usize)
