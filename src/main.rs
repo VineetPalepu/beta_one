@@ -6,6 +6,7 @@ mod players;
 use games::tictactoe::{Position, TicTacToe, TicTacToeMove};
 use games::GameState;
 use players::human::HumanPlayer;
+use players::mcts::MCTSPlayer;
 use players::random::RandomPlayer;
 use players::Player;
 
@@ -13,15 +14,14 @@ use crate::games::GameResult;
 
 fn main()
 {
-    let mut game = TicTacToe::new(3, 3, 3);
-    let p1 = RandomPlayer {};
+    let mut game = TicTacToe::new(5, 5, 4);
+    let p1 = MCTSPlayer::new(3000);
     let p2 = RandomPlayer {};
+    let p3 = HumanPlayer {};
 
-    game.do_move(TicTacToeMove::new(Position::new(1, 1), 1));
+    game.play(&p1, &p3, true);
 
-    //play(&mut game, &p1, &p2);
-
-    benchmark_players(&game, &p1, &p2, 1000);
+    //benchmark_players(&game, &p1, &p2, 1000);
 }
 
 fn println_indent<T: Display>(obj: &T, indents: usize)
