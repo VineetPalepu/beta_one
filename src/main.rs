@@ -3,6 +3,7 @@ use std::fmt::{format, Display};
 mod games;
 mod players;
 
+use games::connect4::Connect4;
 use games::tictactoe::{Position, TicTacToe, TicTacToeMove};
 use games::GameState;
 use players::human::HumanPlayer;
@@ -15,6 +16,8 @@ use crate::games::GameResult;
 fn main()
 {
     let mut game = TicTacToe::new(5, 5, 4);
+    let mut game = Connect4::new(6, 7, 4);
+
     let p1 = MCTSPlayer::new(3000);
     let p2 = RandomPlayer {};
     let p3 = HumanPlayer {};

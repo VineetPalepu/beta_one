@@ -146,7 +146,7 @@ impl GameState for TicTacToe
                     }
                     else
                     {
-                        assert_eq!(player, 2);
+                        debug_assert_eq!(player, 2);
                         return GameResult::P2Win;
                     }
                 }

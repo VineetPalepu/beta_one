@@ -3,6 +3,7 @@ use std::fmt::Display;
 use crate::players::Player;
 
 pub mod tictactoe;
+pub mod connect4;
 
 #[derive(PartialEq)]
 pub enum GameResult
