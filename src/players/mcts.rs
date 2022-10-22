@@ -50,13 +50,22 @@ impl Player for MCTSPlayer
                     .clone();
 
                 let result = tree.simulate_node(&node_to_simulate);
+                tree.backprop_result(&leaf, result)
             }
             else
             {
+                tree.backprop_result(&leaf, tree.get(&leaf).data.check_win());
             }
         }
 
-        todo!()
+        let best_state_ref = tree
+            .children_of(&tree.root_ref())
+            .iter()
+            .max_by(|n1, n2| tree.get_ucb_value(n1).total_cmp(&tree.get_ucb_value(n2)))
+            .unwrap();
+        let best_state = tree.get(best_state_ref).data.clone();
+
+        best_state.last_move().expect("state had no last move")
     }
 }
 
@@ -110,7 +119,8 @@ where
         {
             let mut state = self.get(node).data.clone();
             state.do_move(m);
-            self.insert(state, node);
+            let child = self.insert(state, node);
+            self.get_mut(node).children.push(child);
         }
     }
 
@@ -265,7 +275,7 @@ mod arena_tree
     pub struct Node<T>
     {
         pub parent: Option<NodeRef>,
-        children: Vec<NodeRef>,
+        pub children: Vec<NodeRef>,
         pub data: T,
         pub num_plays: usize,
         pub score: f64,

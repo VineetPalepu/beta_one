@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use super::GameResult;
+use super::{GameResult, GameState};
 
 pub struct TicTacToe
 {
@@ -70,7 +70,7 @@ impl Display for TicTacToe
     }
 }
 
-impl super::GameState for TicTacToe
+impl GameState for TicTacToe
 {
     type Move = TicTacToeMove;
 
@@ -213,6 +213,11 @@ impl super::GameState for TicTacToe
         }
 
         GameResult::InProgress
+    }
+
+    fn last_move(&self) -> Option<Self::Move>
+    {
+        self.last_move
     }
 }
 

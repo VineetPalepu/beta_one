@@ -15,13 +15,13 @@ use crate::games::GameResult;
 fn main()
 {
     let mut game = TicTacToe::new(3, 3, 3);
-    let p1 = MCTSPlayer::new(100);
+    let p1 = MCTSPlayer::new(1000);
     let p2 = RandomPlayer {};
     let p3 = HumanPlayer {};
 
     //game.do_move(TicTacToeMove::new(Position::new(1, 1), 1));
 
-    game.play(&p1, &p3, true);
+    //game.play(&p1, &p3, true);
 
     benchmark_players(&game, &p1, &p2, 1000);
 }
