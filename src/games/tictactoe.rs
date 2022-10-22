@@ -214,6 +214,11 @@ impl GameState for TicTacToe
 
         GameResult::InProgress
     }
+
+    fn last_move(&self) -> Option<Self::Move>
+    {
+        self.last_move
+    }
 }
 
 // Tic Tac Toe helper code

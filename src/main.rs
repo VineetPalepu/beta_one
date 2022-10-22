@@ -7,6 +7,7 @@ use games::connect4::Connect4;
 use games::tictactoe::{Position, TicTacToe, TicTacToeMove};
 use games::GameState;
 use players::human::HumanPlayer;
+use players::mcts::MCTSPlayer;
 use players::random::RandomPlayer;
 use players::Player;
 
@@ -14,15 +15,14 @@ use crate::games::GameResult;
 
 fn main()
 {
-    let mut game = TicTacToe::new(3, 3, 3);
+    let mut game = TicTacToe::new(5, 5, 4);
     let mut game = Connect4::new(6, 7, 4);
 
-    let p1 = HumanPlayer {};
+    let p1 = MCTSPlayer::new(3000);
     let p2 = RandomPlayer {};
+    let p3 = HumanPlayer {};
 
-    //game.do_move(TicTacToeMove::new(Position::new(1, 1), 1));
-
-    game.play(&p1, &p1, true);
+    game.play(&p1, &p3, true);
 
     //benchmark_players(&game, &p1, &p2, 1000);
 }

@@ -25,6 +25,8 @@ pub trait GameState: Clone + Display
 
     fn do_move(&mut self, m: Self::Move);
 
+    fn last_move(&self) -> Option<Self::Move>;
+
     fn check_win(&self) -> GameResult;
 
     fn play(&mut self, p1: &impl Player, p2: &impl Player, verbose: bool) -> GameResult
