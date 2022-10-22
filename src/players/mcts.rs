@@ -7,7 +7,7 @@ use rand::{seq::SliceRandom, thread_rng};
 
 use crate::games::{GameResult, GameState};
 
-use self::arena_tree::{ArenaTree, Node, NodeRef};
+use self::arena_tree::{ArenaTree, NodeRef};
 
 use super::{random::RandomPlayer, Player};
 
@@ -33,7 +33,7 @@ impl Player for MCTSPlayer
     {
         let mut tree = ArenaTree::new(game_state.clone(), self.iterations);
 
-        for i in 1..self.iterations
+        for _ in 1..self.iterations
         {
             let leaf = tree.select_leaf_node();
 
@@ -43,11 +43,7 @@ impl Player for MCTSPlayer
 
                 //println!("{:?}", tree.get(&leaf));
 
-                let node_to_simulate = tree
-                    .children_of(&leaf)
-                    .choose(&mut thread_rng())
-                    .unwrap()
-                    .clone();
+                let node_to_simulate = *tree.children_of(&leaf).choose(&mut thread_rng()).unwrap();
 
                 let result = tree.simulate_node(&node_to_simulate);
                 tree.backprop_result(&leaf, result)
@@ -137,7 +133,7 @@ where
 
     fn backprop_result(&mut self, node: &NodeRef, result: GameResult)
     {
-        let mut node = node.clone();
+        let mut node = *node;
         loop
         {
             let n = self.get_mut(&node);
@@ -169,7 +165,7 @@ where
 
             node = match n.parent
             {
-                Some(parent) => parent.clone(),
+                Some(parent) => parent,
                 None => break,
             };
         }
@@ -190,17 +186,15 @@ where
         }
 
         let value = node.score / node.num_plays as f64;
-        let C = SQRT_2 / 2.0;
+        let c = SQRT_2 / 2.0;
         let exploration = ((parent.num_plays as f64).log(E) / node.num_plays as f64).sqrt();
 
-        value + C * exploration
+        value + c * exploration
     }
 }
 
 mod arena_tree
 {
-    use rand::{seq::SliceRandom, thread_rng};
-
     use self::arena_vec::ArenaVec;
 
     pub use arena_vec::NodeRef;

@@ -1,10 +1,10 @@
-use std::fmt::{format, Display};
+use std::fmt::Display;
 
 mod games;
 mod players;
 
 use games::connect4::Connect4;
-use games::tictactoe::{Position, TicTacToe, TicTacToeMove};
+use games::tictactoe::TicTacToe;
 use games::GameState;
 use players::human::HumanPlayer;
 use players::mcts::MCTSPlayer;
@@ -13,20 +13,22 @@ use players::Player;
 
 use crate::games::GameResult;
 
+#[allow(unused_variables, unused_mut)]
 fn main()
 {
     let mut game = TicTacToe::new(5, 5, 4);
     let mut game = Connect4::new(6, 7, 4);
 
-    let p1 = MCTSPlayer::new(3000);
-    let p2 = RandomPlayer {};
-    let p3 = HumanPlayer {};
+    let mcts_player = MCTSPlayer::new(3000);
+    let rand_player = RandomPlayer {};
+    let human_player = HumanPlayer {};
 
-    game.play(&p1, &p3, true);
+    game.play(&mcts_player, &human_player, true);
 
     //benchmark_players(&game, &p1, &p2, 1000);
 }
 
+#[allow(dead_code)]
 fn println_indent<T: Display>(obj: &T, indents: usize)
 {
     let indent_str = "\t".repeat(indents);
@@ -34,9 +36,10 @@ fn println_indent<T: Display>(obj: &T, indents: usize)
 
     let new_newline = format!("\n{}", indent_str);
     print!("{indent_str}");
-    println!("{}", str.replace("\n", &new_newline));
+    println!("{}", str.replace('\n', &new_newline));
 }
 
+#[allow(dead_code)]
 fn benchmark_players<Game>(game: &Game, p1: &impl Player, p2: &impl Player, iterations: u32)
 where
     Game: GameState,

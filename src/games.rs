@@ -2,10 +2,10 @@ use std::fmt::Display;
 
 use crate::players::Player;
 
-pub mod tictactoe;
 pub mod connect4;
+pub mod tictactoe;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum GameResult
 {
     InProgress,

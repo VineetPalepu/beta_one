@@ -1,10 +1,5 @@
 use core::panic;
-use std::{
-    fmt::{self, Display, Formatter},
-    ops::{Index, IndexMut},
-};
-
-use crate::games;
+use std::fmt::{self, Display, Formatter};
 
 use self::board::{position::Position, Board};
 
@@ -319,10 +314,7 @@ mod board
 
     pub mod position
     {
-        use std::{
-            fmt::{self, Display, Formatter},
-            ops::Add,
-        };
+        use std::fmt::{self, Display, Formatter};
 
         #[derive(Clone, Copy)]
         pub struct Position
