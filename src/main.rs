@@ -23,6 +23,7 @@ use rand::thread_rng;
 
 use crate::games::GameResult;
 
+// TODO: accept parent pointer so graph can be added to another graph
 fn create_game_tree<T>(state: &T, depth: Option<usize>) -> Graph<T, T::Move>
 where
     T: GameState,
@@ -76,6 +77,10 @@ fn main()
     game.do_move(game.get_valid_moves()[0]);
     game.do_move(game.get_valid_moves()[0]);
     game.do_move(game.get_valid_moves()[0]);
+
+    // TODO: make game tree explorer using graph viz that shows one node (and its neighbors) at a time and lets you navigate to
+    // parent or children notes
+    // should be live generated so that it only generates to the depth needed
 
     // TODO: update GameState Display trait to show other information like GameResult and current player
     // TODO: serialize and deserialize for GameState so you can save and explore a game tree later
