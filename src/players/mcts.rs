@@ -9,7 +9,7 @@ use crate::games::{GameResult, GameState};
 
 use self::arena_tree::{ArenaTree, NodeRef};
 
-use super::{random::RandomPlayer, Player};
+use crate::players::{random::RandomPlayer, GamePlayer};
 
 pub struct MCTSPlayer
 {
@@ -24,7 +24,7 @@ impl MCTSPlayer
     }
 }
 
-impl Player for MCTSPlayer
+impl GamePlayer for MCTSPlayer
 {
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where
@@ -143,16 +143,9 @@ where
             {
                 GameResult::InProgress => panic!("game should be finished"),
                 GameResult::Draw => 0.5,
-                win =>
+                GameResult::Win(winner) =>
                 {
-                    let winner = match win
-                    {
-                        GameResult::P1Win => 1,
-                        GameResult::P2Win => 2,
-                        _ => panic!("invalid state"),
-                    };
-
-                    if winner != n.data.player_to_move()
+                    if *winner != n.data.player_to_move()
                     {
                         1.0
                     }
