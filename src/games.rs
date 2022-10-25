@@ -5,6 +5,8 @@ use crate::players::Player;
 pub mod connect4;
 pub mod tictactoe;
 
+pub mod board;
+
 #[derive(PartialEq, Eq)]
 pub enum GameResult
 {
