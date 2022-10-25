@@ -210,8 +210,9 @@ impl Display for Connect4
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
+        writeln!(f, "Board: ")?;
         write!(f, "{}", self.board)?;
-
+        write!(f, "Result: {}", self.check_win())?;
         Ok(())
     }
 }
