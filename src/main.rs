@@ -57,15 +57,7 @@ where
         let new_node = tree.add_node(new_state);
         tree.add_edge(node, new_node, m);
 
-        add_children(
-            tree,
-            new_node,
-            match depth
-            {
-                Some(depth) => Some(depth - 1),
-                None => None,
-            },
-        );
+        add_children(tree, new_node, depth.map(|x| x - 1));
     }
 }
 

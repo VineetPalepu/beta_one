@@ -183,10 +183,10 @@ fn generate_line(pos: Position, dir: (i128, i128), size: (usize, usize)) -> Vec<
 
 fn on_board(pos: (i128, i128), size: (usize, usize)) -> bool
 {
-    return pos.0 >= 0
+    pos.0 >= 0
         && pos.1 >= 0
         && pos.0 < size.0.try_into().unwrap()
-        && pos.1 < size.1.try_into().unwrap();
+        && pos.1 < size.1.try_into().unwrap()
 }
 
 fn tuple_to_pos(tuple: (i128, i128)) -> Position
