@@ -110,10 +110,6 @@ impl GameState for Connect4
         }
     }
 
-    // TODO: Refactor, lots of code reuse
-    // possibly generate list of positions along each direction first then check for number
-    // of consecutives found
-    // TODO: compare with tictactoe implementation
     fn check_win(&self) -> GameResult
     {
         let last_move = match self.last_move

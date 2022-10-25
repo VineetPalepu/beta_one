@@ -71,8 +71,6 @@ fn main()
         game.do_move(*game.get_valid_moves().choose(&mut thread_rng()).unwrap());
         println!("{game}");
     }
-    // TODO: update GameState Display trait to show other information like GameResult and current player
-    // TODO: serialize and deserialize for GameState so you can save and explore a game tree later
 
     let tree = create_game_tree(&game, Some(3));
     tree_to_file(tree, "out\\tree.dot")
