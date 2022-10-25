@@ -87,7 +87,8 @@ impl GameState for Connect4
         // positions open, so remove the position from the vec
         if m.position.row == 0
         {
-            self.open_positions.swap_remove(index);
+            // can switch to swap_remove for performance if necessary
+            self.open_positions.remove(index);
         }
         // otherwise, we can continue stacking pieces on top of this one, so update the
         // position to be (row - 1, col)
@@ -100,6 +101,7 @@ impl GameState for Connect4
     // TODO: Refactor, lots of code reuse
     // possibly generate list of positions along each direction first then check for number
     // of consecutives found
+    // TODO: compare with tictactoe implementation
     fn check_win(&self) -> GameResult
     {
         let last_move = match self.last_move
@@ -180,8 +182,6 @@ impl GameState for Connect4
             }
         }
 
-        // TODO: need explicit check for draw
-        // draw iff open_positions is empty
         if self.open_positions.is_empty()
         {
             return GameResult::Draw;

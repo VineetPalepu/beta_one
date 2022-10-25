@@ -89,7 +89,9 @@ impl GameState for TicTacToe
             .iter()
             .position(|&p| p == m.position)
             .expect("couldn't find move");
-        self.open_positions.swap_remove(index);
+
+        // can change to swap_remove for better performance if necessary
+        self.open_positions.remove(index);
     }
 
     fn check_win(&self) -> GameResult
