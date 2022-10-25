@@ -25,16 +25,6 @@ impl TicTacToe
     }
 }
 
-impl Display for TicTacToe
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        write!(f, "{}", self.board)?;
-
-        Ok(())
-    }
-}
-
 impl GameState for TicTacToe
 {
     type Move = TicTacToeMove;
@@ -196,8 +186,17 @@ impl GameState for TicTacToe
     }
 }
 
-// Tic Tac Toe helper code
-#[derive(Copy, Clone)]
+impl Display for TicTacToe
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        write!(f, "{}", self.board)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Clone, Copy)]
 pub struct TicTacToeMove
 {
     position: Position,

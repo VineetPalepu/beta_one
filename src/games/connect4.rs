@@ -239,7 +239,7 @@ impl Display for Connect4Move
     }
 }
 
-#[derive(Clone, Copy, Default, PartialEq, Debug)]
+#[derive(Clone, Copy, Default, PartialEq, Eq, Debug)]
 enum Piece
 {
     #[default]
