@@ -1,10 +1,10 @@
 use rand::Rng;
 
-use super::Player;
+use super::GamePlayer;
 
 pub struct RandomPlayer;
 
-impl Player for RandomPlayer
+impl GamePlayer for RandomPlayer
 {
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where

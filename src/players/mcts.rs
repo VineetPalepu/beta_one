@@ -9,7 +9,7 @@ use crate::games::{GameResult, GameState};
 
 use self::arena_tree::{ArenaTree, NodeRef};
 
-use super::{random::RandomPlayer, Player};
+use super::{random::RandomPlayer, GamePlayer};
 
 pub struct MCTSPlayer
 {
@@ -24,7 +24,7 @@ impl MCTSPlayer
     }
 }
 
-impl Player for MCTSPlayer
+impl GamePlayer for MCTSPlayer
 {
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where

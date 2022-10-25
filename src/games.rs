@@ -1,6 +1,6 @@
 use std::fmt::{self, Display, Formatter};
 
-use crate::players::Player;
+use crate::players::GamePlayer;
 
 pub mod connect4;
 pub mod tictactoe;
@@ -21,7 +21,7 @@ pub trait GameState: Clone + Display
 
     fn check_win(&self) -> GameResult;
 
-    fn play(&mut self, p1: &impl Player, p2: &impl Player, verbose: bool) -> GameResult
+    fn play(&mut self, p1: &impl GamePlayer, p2: &impl GamePlayer, verbose: bool) -> GameResult
     {
         while self.check_win() == GameResult::InProgress
         {

@@ -1,12 +1,12 @@
 use std::fmt::Display;
 use std::io::{self, Write};
 
-use super::Player;
+use super::GamePlayer;
 use crate::games::GameState;
 
 pub struct HumanPlayer;
 
-impl Player for HumanPlayer
+impl GamePlayer for HumanPlayer
 {
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where

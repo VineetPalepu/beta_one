@@ -9,7 +9,7 @@ use games::GameState;
 use players::human::HumanPlayer;
 use players::mcts::MCTSPlayer;
 use players::random::RandomPlayer;
-use players::Player;
+use players::GamePlayer;
 
 use crate::games::GameResult;
 
@@ -41,7 +41,7 @@ fn println_indent<T: Display>(obj: &T, indents: usize)
 }
 
 #[allow(dead_code)]
-fn benchmark_players<Game>(game: &Game, p1: &impl Player, p2: &impl Player, iterations: u32)
+fn benchmark_players<Game>(game: &Game, p1: &impl GamePlayer, p2: &impl GamePlayer, iterations: u32)
 where
     Game: GameState,
     Game::Move: Display,
