@@ -57,8 +57,17 @@ where
         let winner = initial_state.play(p1, p2, false);
         match winner
         {
-            GameResult::P1Win => p1_wins += 1,
-            GameResult::P2Win => p2_wins += 1,
+            GameResult::Win(player) =>
+            {
+                if player == 1
+                {
+                    p1_wins += 1;
+                }
+                else if player == 2
+                {
+                    p2_wins += 1;
+                }
+            },
             GameResult::Draw => draws += 1,
             GameResult::InProgress =>
             {},

@@ -99,15 +99,16 @@ impl GameState for TicTacToe
 
                 if consecutive >= self.num_to_win
                 {
-                    if player == 1
-                    {
-                        return GameResult::P1Win;
-                    }
-                    else
-                    {
-                        debug_assert_eq!(player, 2);
-                        return GameResult::P2Win;
-                    }
+                    return GameResult::Win(player);
+                    // if player == 1
+                    // {
+                    //     return GameResult::P1Win;
+                    // }
+                    // else
+                    // {
+                    //     debug_assert_eq!(player, 2);
+                    //     return GameResult::P2Win;
+                    // }
                 }
 
                 let irow: i32 = new_pos
@@ -142,15 +143,16 @@ impl GameState for TicTacToe
                 consecutive += 1;
                 if consecutive >= self.num_to_win
                 {
-                    if player == 1
-                    {
-                        return GameResult::P1Win;
-                    }
-                    else
-                    {
-                        assert_eq!(player, 2);
-                        return GameResult::P2Win;
-                    }
+                    return GameResult::Win(player);
+                    // if player == 1
+                    // {
+                    //     return GameResult::P1Win;
+                    // }
+                    // else
+                    // {
+                    //     assert_eq!(player, 2);
+                    //     return GameResult::P2Win;
+                    // }
                 }
 
                 let irow: i32 = new_pos.row.try_into().unwrap();

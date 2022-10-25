@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{self, Display, Formatter};
 
 use crate::players::Player;
 
@@ -6,16 +6,6 @@ pub mod connect4;
 pub mod tictactoe;
 
 pub mod board;
-
-#[derive(PartialEq, Eq)]
-pub enum GameResult
-{
-    InProgress,
-    Draw,
-    // TODO: Make into "Win(u32)"?
-    P1Win,
-    P2Win,
-}
 
 pub trait GameState: Clone + Display
 {
@@ -69,22 +59,37 @@ pub trait GameState: Clone + Display
         }
 
         // Announce winner
-        let winner = self.check_win();
+        let game_result = self.check_win();
         if verbose
         {
-            if winner == GameResult::Draw
-            {
-                println!("Draw!");
-            }
-            else
-            {
-                println!(
-                    "Player {} Wins!",
-                    if winner == GameResult::P1Win { 1 } else { 2 }
-                );
-            }
+            println!("{game_result}");
         }
 
-        winner
+        game_result
+    }
+}
+
+#[derive(PartialEq, Eq)]
+pub enum GameResult
+{
+    InProgress,
+    Draw,
+    Win(u32),
+}
+
+impl Display for GameResult
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        write!(
+            f,
+            "{}",
+            match self
+            {
+                GameResult::InProgress => String::from("Game in Progress"),
+                GameResult::Draw => String::from("Draw"),
+                GameResult::Win(player) => format!("Player {player} Wins"),
+            }
+        )
     }
 }

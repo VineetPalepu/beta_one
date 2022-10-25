@@ -128,15 +128,21 @@ impl GameState for Connect4
 
                 if consecutive >= self.num_to_win
                 {
-                    if player == Piece::P1
+                    return GameResult::Win(match player
                     {
-                        return GameResult::P1Win;
-                    }
-                    else
-                    {
-                        debug_assert_eq!(player, Piece::P2);
-                        return GameResult::P2Win;
-                    }
+                        Piece::Empty => panic!("invalid player"),
+                        Piece::P1 => 1,
+                        Piece::P2 => 2,
+                    });
+                    // if player == Piece::P1
+                    // {
+                    //     return GameResult::P1Win;
+                    // }
+                    // else
+                    // {
+                    //     debug_assert_eq!(player, Piece::P2);
+                    //     return GameResult::P2Win;
+                    // }
                 }
 
                 let irow: i32 = new_pos
@@ -171,15 +177,21 @@ impl GameState for Connect4
                 consecutive += 1;
                 if consecutive >= self.num_to_win
                 {
-                    if player == Piece::P1
+                    return GameResult::Win(match player
                     {
-                        return GameResult::P1Win;
-                    }
-                    else
-                    {
-                        debug_assert_eq!(player, Piece::P2);
-                        return GameResult::P2Win;
-                    }
+                        Piece::Empty => panic!("invalid player"),
+                        Piece::P1 => 1,
+                        Piece::P2 => 2,
+                    });
+                    // if player == Piece::P1
+                    // {
+                    //     return GameResult::P1Win;
+                    // }
+                    // else
+                    // {
+                    //     debug_assert_eq!(player, Piece::P2);
+                    //     return GameResult::P2Win;
+                    // }
                 }
 
                 let irow: i32 = new_pos.row.try_into().unwrap();
