@@ -1,13 +1,15 @@
 use std::fmt::{self, Display, Formatter};
 
-use super::{GameResult, GameState};
+use super::{
+    board::{Board, Position},
+    GameResult, GameState,
+};
 
+#[derive(Clone)]
 pub struct TicTacToe
 {
-    board: Vec<u32>,
+    board: Board<u32>,
     last_move: Option<TicTacToeMove>,
-    rows: usize,
-    cols: usize,
     num_to_win: usize,
 }
 
@@ -16,38 +18,9 @@ impl TicTacToe
     pub fn new(rows: usize, cols: usize, num_to_win: usize) -> TicTacToe
     {
         TicTacToe {
-            board: vec![0; rows * cols],
+            board: Board::new(rows, cols),
             last_move: None,
-            rows,
-            cols,
             num_to_win,
-        }
-    }
-
-    fn i2p(&self, index: usize) -> Position
-    {
-        Position {
-            row: index / self.cols,
-            col: index % self.cols,
-        }
-    }
-
-    fn p2i(&self, position: &Position) -> usize
-    {
-        position.row * self.cols + position.col
-    }
-}
-
-impl Clone for TicTacToe
-{
-    fn clone(&self) -> Self
-    {
-        Self {
-            board: self.board.clone(),
-            last_move: self.last_move,
-            rows: self.rows,
-            cols: self.cols,
-            num_to_win: self.num_to_win,
         }
     }
 }
@@ -56,15 +29,7 @@ impl Display for TicTacToe
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
-        for i in 0..self.rows
-        {
-            for j in 0..self.cols
-            {
-                let index = self.p2i(&Position { row: i, col: j });
-                write!(f, "{} ", self.board[index])?;
-            }
-            writeln!(f)?;
-        }
+        write!(f, "{}", self.board)?;
 
         Ok(())
     }
@@ -76,18 +41,21 @@ impl GameState for TicTacToe
 
     fn get_valid_moves(&self) -> Vec<Self::Move>
     {
-        let mut moves: Vec<Self::Move> = vec![];
-        for i in 0..self.board.len()
+        let mut moves = vec![];
+        for row in 0..self.board.rows()
         {
-            if self.board[i] == 0
+            for col in 0..self.board.cols()
             {
-                moves.push(TicTacToeMove {
-                    position: self.i2p(i),
-                    player: self.player_to_move(),
-                });
+                let pos = Position { row, col };
+                if self.board[pos] == 0
+                {
+                    moves.push(TicTacToeMove {
+                        position: pos,
+                        player: self.player_to_move(),
+                    });
+                }
             }
         }
-
         moves
     }
 
@@ -112,29 +80,30 @@ impl GameState for TicTacToe
 
     fn do_move(&mut self, m: Self::Move)
     {
-        let index = self.p2i(&m.position);
-        self.board[index] = m.player;
+        self.board[m.position] = m.player;
         self.last_move = Some(m);
     }
 
     fn check_win(&self) -> GameResult
     {
-        if self.last_move.is_none()
+        let last_move = match self.last_move
         {
-            return GameResult::InProgress;
-        }
-        let last_move = self.last_move.unwrap();
+            Some(m) => m,
+            None => return GameResult::InProgress,
+        };
 
         let game_over = self.get_valid_moves().is_empty();
 
         let player = last_move.player;
+
+        let board = &self.board;
 
         for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
         {
             let mut consecutive = 0;
             let mut new_pos = last_move.position;
 
-            while self.board[self.p2i(&new_pos)] == player
+            while board[new_pos] == player
             {
                 consecutive += 1;
 
@@ -151,16 +120,22 @@ impl GameState for TicTacToe
                     }
                 }
 
-                let irow: i32 = new_pos.row.try_into().unwrap();
-                let icol: i32 = new_pos.col.try_into().unwrap();
+                let irow: i32 = new_pos
+                    .row
+                    .try_into()
+                    .expect("couldn't convert index to integer");
+                let icol: i32 = new_pos
+                    .col
+                    .try_into()
+                    .expect("couldn't convert index to integer");
 
                 let new_row = irow + dir.0;
                 let new_col = icol + dir.1;
 
                 if new_row < 0
-                    || new_row >= self.rows.try_into().unwrap()
+                    || new_row >= board.rows().try_into().unwrap()
                     || new_col < 0
-                    || new_col >= self.cols.try_into().unwrap()
+                    || new_col >= board.cols().try_into().unwrap()
                 {
                     break;
                 }
@@ -172,7 +147,7 @@ impl GameState for TicTacToe
             consecutive -= 1;
             new_pos = last_move.position;
 
-            while self.board[self.p2i(&new_pos)] == player
+            while board[new_pos] == player
             {
                 consecutive += 1;
                 if consecutive >= self.num_to_win
@@ -195,9 +170,9 @@ impl GameState for TicTacToe
                 let new_col = icol - dir.1;
 
                 if new_row < 0
-                    || new_row >= self.rows.try_into().unwrap()
+                    || new_row >= board.rows().try_into().unwrap()
                     || new_col < 0
-                    || new_col >= self.cols.try_into().unwrap()
+                    || new_col >= board.cols().try_into().unwrap()
                 {
                     break;
                 }
@@ -229,41 +204,10 @@ pub struct TicTacToeMove
     player: u32,
 }
 
-impl TicTacToeMove
-{
-    pub fn new(position: Position, player: u32) -> TicTacToeMove
-    {
-        TicTacToeMove { position, player }
-    }
-}
-
 impl Display for TicTacToeMove
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
         write!(f, "Player: {}, Position: {}", self.player, self.position)
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct Position
-{
-    row: usize,
-    col: usize,
-}
-
-impl Position
-{
-    pub fn new(row: usize, col: usize) -> Position
-    {
-        Position { row, col }
-    }
-}
-
-impl Display for Position
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        write!(f, "({}, {})", self.row, self.col)
     }
 }
