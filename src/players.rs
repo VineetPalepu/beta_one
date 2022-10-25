@@ -4,6 +4,7 @@ use crate::games::GameState;
 
 pub mod human;
 pub mod mcts;
+pub mod minimax;
 pub mod random;
 
 pub trait Player
