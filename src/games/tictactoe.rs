@@ -119,7 +119,7 @@ impl GameState for TicTacToe
                 match board[pos] == Cell::Piece(player)
                 {
                     true => consecutive += 1,
-                    false => consecutive += 0,
+                    false => consecutive = 0,
                 }
 
                 if consecutive >= self.num_to_win

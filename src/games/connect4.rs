@@ -6,6 +6,8 @@ use crate::games::{
     GameResult, GameState, Player,
 };
 
+use super::common::generate_line;
+
 #[derive(Clone)]
 pub struct Connect4
 {
@@ -120,75 +122,30 @@ impl GameState for Connect4
             None => return GameResult::InProgress,
         };
 
-        let player = last_move.player;
-
         let board = &self.board;
+
+        let player = last_move.player;
+        let start_pos = last_move.position;
 
         for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
         {
+            let line = generate_line(start_pos, dir, (board.rows(), board.cols()));
             let mut consecutive = 0;
-            let mut new_pos = last_move.position;
-
-            while board[new_pos] == Cell::Piece(player)
+            for pos in line
             {
-                consecutive += 1;
-
-                if consecutive >= self.num_to_win
+                if board[pos] == Cell::Piece(player)
                 {
-                    return GameResult::Win(player);
+                    consecutive += 1;
+
+                    if consecutive >= self.num_to_win
+                    {
+                        return GameResult::Win(player);
+                    }
                 }
-
-                let irow: i32 = new_pos
-                    .row
-                    .try_into()
-                    .expect("couldn't convert index to integer");
-                let icol: i32 = new_pos
-                    .col
-                    .try_into()
-                    .expect("couldn't convert index to integer");
-
-                let new_row = irow + dir.0;
-                let new_col = icol + dir.1;
-
-                if new_row < 0
-                    || new_row >= board.rows().try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= board.cols().try_into().unwrap()
+                else
                 {
-                    break;
+                    consecutive = 0;
                 }
-
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
-            }
-
-            consecutive -= 1;
-            new_pos = last_move.position;
-
-            while board[new_pos] == Cell::Piece(player)
-            {
-                consecutive += 1;
-                if consecutive >= self.num_to_win
-                {
-                    return GameResult::Win(player);
-                }
-
-                let irow: i32 = new_pos.row.try_into().unwrap();
-                let icol: i32 = new_pos.col.try_into().unwrap();
-
-                let new_row = irow - dir.0;
-                let new_col = icol - dir.1;
-
-                if new_row < 0
-                    || new_row >= board.rows().try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= board.cols().try_into().unwrap()
-                {
-                    break;
-                }
-
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
             }
         }
 

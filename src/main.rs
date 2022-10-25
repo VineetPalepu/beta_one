@@ -69,6 +69,7 @@ fn main()
     for _ in 0..20
     {
         game.do_move(*game.get_valid_moves().choose(&mut thread_rng()).unwrap());
+        println!("{game}");
     }
     // TODO: update GameState Display trait to show other information like GameResult and current player
     // TODO: serialize and deserialize for GameState so you can save and explore a game tree later
@@ -78,14 +79,14 @@ fn main()
 
     /*
     // let mut game = TicTacToe::new(3, 3, 3);
-    let mut game = TicTacToe::new(5, 5, 4);
-    // let mut game = Connect4::new(6, 7, 4);
+    // let mut game = TicTacToe::new(5, 5, 4);
+    let mut game = Connect4::new(6, 7, 4);
 
     let mcts_player = MCTSPlayer::new(3000);
     let rand_player = RandomPlayer {};
     let human_player = HumanPlayer {};
 
-    game.play(&mcts_player, &mcts_player, true);
+    game.play(&human_player, &human_player, true);
 
     //benchmark_players(&game, &p1, &p2, 1000);
     */
