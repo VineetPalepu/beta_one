@@ -3,6 +3,8 @@ use std::{
     ops::{Index, IndexMut},
 };
 
+use super::Player;
+
 #[derive(Clone)]
 pub struct Board<T>
 {
@@ -65,6 +67,26 @@ impl<T> IndexMut<Position> for Board<T>
     fn index_mut(&mut self, index: Position) -> &mut Self::Output
     {
         &mut self.data[index.row * self.cols + index.col]
+    }
+}
+
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub enum Cell
+{
+    #[default]
+    Empty,
+    Piece(Player),
+}
+
+impl Display for Cell
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        match self
+        {
+            Cell::Empty => write!(f, "-"),
+            Cell::Piece(p) => write!(f, "{}", p.0),
+        }
     }
 }
 

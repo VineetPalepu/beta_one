@@ -1,7 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
 use super::{
-    board::{Board, Position},
+    board::{Board, Cell, Position},
     GameResult, GameState, Player,
 };
 
@@ -9,8 +9,8 @@ use super::{
 pub struct TicTacToe
 {
     board: Board<Cell>,
-    last_move: Option<TicTacToeMove>,
     num_to_win: usize,
+    last_move: Option<TicTacToeMove>,
 }
 
 impl TicTacToe
@@ -19,8 +19,8 @@ impl TicTacToe
     {
         TicTacToe {
             board: Board::new(rows, cols),
-            last_move: None,
             num_to_win,
+            last_move: None,
         }
     }
 }
@@ -81,8 +81,6 @@ impl GameState for TicTacToe
             Some(m) => m,
             None => return GameResult::InProgress,
         };
-
-        let game_over = self.get_valid_moves().is_empty();
 
         let player = last_move.player;
 
@@ -156,7 +154,7 @@ impl GameState for TicTacToe
             }
         }
 
-        if game_over
+        if self.get_valid_moves().is_empty()
         {
             return GameResult::Draw;
         }
@@ -192,25 +190,5 @@ impl Display for TicTacToeMove
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
         write!(f, "{}, Position: {}", self.player, self.position)
-    }
-}
-
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
-enum Cell
-{
-    #[default]
-    Empty,
-    Piece(Player),
-}
-
-impl Display for Cell
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        match self
-        {
-            Cell::Empty => write!(f, "-"),
-            Cell::Piece(p) => write!(f, "{}", p.0),
-        }
     }
 }

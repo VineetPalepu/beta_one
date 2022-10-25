@@ -2,7 +2,7 @@ use core::panic;
 use std::fmt::{self, Display, Formatter};
 
 use super::{
-    board::{Board, Position},
+    board::{Board, Cell, Position},
     GameResult, GameState, Player,
 };
 
@@ -210,25 +210,5 @@ impl Display for Connect4Move
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
         write!(f, "{}, Position: {}", self.player, self.position)
-    }
-}
-
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
-enum Cell
-{
-    #[default]
-    Empty,
-    Piece(Player),
-}
-
-impl Display for Cell
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        match self
-        {
-            Cell::Empty => write!(f, "-"),
-            Cell::Piece(p) => write!(f, "{}", p.0),
-        }
     }
 }
