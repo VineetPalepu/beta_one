@@ -19,13 +19,12 @@ impl Connect4
 {
     pub fn new(rows: usize, cols: usize, num_to_win: usize) -> Connect4
     {
-        let board = Board::new(rows, cols);
         let open_positions = (0..cols)
             .map(|i| Position { row: rows - 1, col: i })
             .collect();
 
         Connect4 {
-            board,
+            board: Board::new(rows, cols),
             num_to_win,
             open_positions,
             last_move: None,
@@ -39,6 +38,11 @@ impl GameState for Connect4
 
     fn get_valid_moves(&self) -> Vec<Self::Move>
     {
+        // if game is over no moves allowed
+        if self.check_win() != GameResult::InProgress
+        {
+            return vec![];
+        }
         self.open_positions
             .iter()
             .map(|p| Connect4Move {
@@ -63,6 +67,10 @@ impl GameState for Connect4
         // change board data based on move
         self.board[m.position] = Cell::Piece(m.player);
 
+        // update the last_move so that all other logic works
+        self.last_move = Some(m);
+
+        // find the index of the position played so we can modify / delete it
         let index = self
             .open_positions
             .iter()
@@ -87,9 +95,6 @@ impl GameState for Connect4
         {
             self.open_positions[index].row -= 1;
         }
-
-        // update the last_move so that all other logic works
-        self.last_move = Some(m);
     }
 
     // TODO: Refactor, lots of code reuse
@@ -175,7 +180,9 @@ impl GameState for Connect4
             }
         }
 
-        if self.get_valid_moves().is_empty()
+        // TODO: need explicit check for draw
+        // draw iff open_positions is empty
+        if self.open_positions.is_empty()
         {
             return GameResult::Draw;
         }

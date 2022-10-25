@@ -93,7 +93,7 @@ impl Display for Cell
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Position
 {
     pub row: usize,

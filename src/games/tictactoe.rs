@@ -13,6 +13,7 @@ pub struct TicTacToe
 {
     board: Board<Cell>,
     num_to_win: usize,
+    open_positions: Vec<Position>,
     last_move: Option<TicTacToeMove>,
 }
 
@@ -20,9 +21,19 @@ impl TicTacToe
 {
     pub fn new(rows: usize, cols: usize, num_to_win: usize) -> TicTacToe
     {
+        let mut open_positions = vec![];
+        for row in 0..rows
+        {
+            for col in 0..cols
+            {
+                open_positions.push(Position { row, col });
+            }
+        }
+
         TicTacToe {
             board: Board::new(rows, cols),
             num_to_win,
+            open_positions,
             last_move: None,
         }
     }
@@ -34,22 +45,19 @@ impl GameState for TicTacToe
 
     fn get_valid_moves(&self) -> Vec<Self::Move>
     {
-        let mut moves = vec![];
-        for row in 0..self.board.rows()
+        // if game is over return empty vec because there are no valid moves
+        if self.check_win() != GameResult::InProgress
         {
-            for col in 0..self.board.cols()
-            {
-                let pos = Position { row, col };
-                if self.board[pos] == Cell::Empty
-                {
-                    moves.push(TicTacToeMove {
-                        position: pos,
-                        player: self.player_to_move(),
-                    });
-                }
-            }
+            return vec![];
         }
-        moves
+
+        self.open_positions
+            .iter()
+            .map(|p| TicTacToeMove {
+                position: *p,
+                player: self.player_to_move(),
+            })
+            .collect()
     }
 
     fn player_to_move(&self) -> Player
@@ -75,6 +83,13 @@ impl GameState for TicTacToe
     {
         self.board[m.position] = Cell::Piece(m.player);
         self.last_move = Some(m);
+
+        let index = self
+            .open_positions
+            .iter()
+            .position(|&p| p == m.position)
+            .expect("couldn't find move");
+        self.open_positions.swap_remove(index);
     }
 
     fn check_win(&self) -> GameResult
@@ -158,7 +173,8 @@ impl GameState for TicTacToe
             }
         }
 
-        if self.get_valid_moves().is_empty()
+        // if no one has won yet, and there is no place left to play, it's a draw
+        if self.open_positions.is_empty()
         {
             return GameResult::Draw;
         }
