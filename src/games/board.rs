@@ -23,7 +23,10 @@ impl<T: Default> Board<T>
             cols,
         }
     }
+}
 
+impl<T> Board<T>
+{
     pub fn rows(&self) -> usize
     {
         self.rows
