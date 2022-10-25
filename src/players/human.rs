@@ -1,8 +1,8 @@
 use std::fmt::Display;
 use std::io::{self, Write};
 
-use super::GamePlayer;
 use crate::games::GameState;
+use crate::players::GamePlayer;
 
 pub struct HumanPlayer;
 

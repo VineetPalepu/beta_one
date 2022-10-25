@@ -3,7 +3,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use super::Player;
+use crate::games::Player;
 
 #[derive(Clone)]
 pub struct Board<T>

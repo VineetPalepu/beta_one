@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use super::GamePlayer;
+use crate::players::GamePlayer;
 
 pub struct RandomPlayer;
 

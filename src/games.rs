@@ -5,7 +5,7 @@ use crate::players::GamePlayer;
 pub mod connect4;
 pub mod tictactoe;
 
-pub mod board;
+pub mod common;
 
 pub trait GameState: Clone + Display
 {

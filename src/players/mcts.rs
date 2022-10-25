@@ -9,7 +9,7 @@ use crate::games::{GameResult, GameState};
 
 use self::arena_tree::{ArenaTree, NodeRef};
 
-use super::{random::RandomPlayer, GamePlayer};
+use crate::players::{random::RandomPlayer, GamePlayer};
 
 pub struct MCTSPlayer
 {

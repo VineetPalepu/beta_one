@@ -1,8 +1,8 @@
 use core::panic;
 use std::fmt::{self, Display, Formatter};
 
-use super::{
-    board::{Board, Cell, Position},
+use crate::games::{
+    common::board::{Board, Cell, Position},
     GameResult, GameState, Player,
 };
 
