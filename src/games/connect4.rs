@@ -3,13 +3,13 @@ use std::fmt::{self, Display, Formatter};
 
 use super::{
     board::{Board, Position},
-    GameResult, GameState,
+    GameResult, GameState, Player,
 };
 
 #[derive(Clone)]
 pub struct Connect4
 {
-    board: Board<Piece>,
+    board: Board<Cell>,
     num_to_win: usize,
     open_positions: Vec<Position>,
     last_move: Option<Connect4Move>,
@@ -48,25 +48,20 @@ impl GameState for Connect4
             .collect()
     }
 
-    fn player_to_move(&self) -> u32
+    fn player_to_move(&self) -> Player
     {
         match self.last_move
         {
             #[rustfmt::skip]
-            Some(m) => if m.player == 2 {1} else {2},
-            None => 1,
+            Some(last_move) => if last_move.player == Player(1) {Player(2)} else {Player(1)},
+            None => Player(1),
         }
     }
 
     fn do_move(&mut self, m: Self::Move)
     {
         // change board data based on move
-        self.board[m.position] = match m.player
-        {
-            1 => Piece::P1,
-            2 => Piece::P2,
-            _ => panic!("invalid player"),
-        };
+        self.board[m.position] = Cell::Piece(m.player);
 
         let index = self
             .open_positions
@@ -108,12 +103,7 @@ impl GameState for Connect4
             None => return GameResult::InProgress,
         };
 
-        let player = match &last_move.player
-        {
-            1 => Piece::P1,
-            2 => Piece::P2,
-            _ => panic!("invalid player"),
-        };
+        let player = last_move.player;
 
         let board = &self.board;
 
@@ -122,27 +112,13 @@ impl GameState for Connect4
             let mut consecutive = 0;
             let mut new_pos = last_move.position;
 
-            while board[new_pos] == player
+            while board[new_pos] == Cell::Piece(player)
             {
                 consecutive += 1;
 
                 if consecutive >= self.num_to_win
                 {
-                    return GameResult::Win(match player
-                    {
-                        Piece::Empty => panic!("invalid player"),
-                        Piece::P1 => 1,
-                        Piece::P2 => 2,
-                    });
-                    // if player == Piece::P1
-                    // {
-                    //     return GameResult::P1Win;
-                    // }
-                    // else
-                    // {
-                    //     debug_assert_eq!(player, Piece::P2);
-                    //     return GameResult::P2Win;
-                    // }
+                    return GameResult::Win(player);
                 }
 
                 let irow: i32 = new_pos
@@ -172,26 +148,12 @@ impl GameState for Connect4
             consecutive -= 1;
             new_pos = last_move.position;
 
-            while board[new_pos] == player
+            while board[new_pos] == Cell::Piece(player)
             {
                 consecutive += 1;
                 if consecutive >= self.num_to_win
                 {
-                    return GameResult::Win(match player
-                    {
-                        Piece::Empty => panic!("invalid player"),
-                        Piece::P1 => 1,
-                        Piece::P2 => 2,
-                    });
-                    // if player == Piece::P1
-                    // {
-                    //     return GameResult::P1Win;
-                    // }
-                    // else
-                    // {
-                    //     debug_assert_eq!(player, Piece::P2);
-                    //     return GameResult::P2Win;
-                    // }
+                    return GameResult::Win(player);
                 }
 
                 let irow: i32 = new_pos.row.try_into().unwrap();
@@ -240,35 +202,33 @@ impl Display for Connect4
 pub struct Connect4Move
 {
     position: Position,
-    player: u32,
+    player: Player,
 }
 
 impl Display for Connect4Move
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
-        write!(f, "Player: {}, Position: {}", self.player, self.position)
+        write!(f, "{}, Position: {}", self.player, self.position)
     }
 }
 
-#[derive(Clone, Copy, Default, PartialEq, Eq, Debug)]
-enum Piece
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+enum Cell
 {
     #[default]
     Empty,
-    P1,
-    P2,
+    Piece(Player),
 }
 
-impl Display for Piece
+impl Display for Cell
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
         match self
         {
-            Piece::Empty => write!(f, "0"),
-            Piece::P1 => write!(f, "1"),
-            Piece::P2 => write!(f, "2"),
+            Cell::Empty => write!(f, "-"),
+            Cell::Piece(p) => write!(f, "{}", p.0),
         }
     }
 }

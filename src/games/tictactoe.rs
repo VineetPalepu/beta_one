@@ -2,13 +2,13 @@ use std::fmt::{self, Display, Formatter};
 
 use super::{
     board::{Board, Position},
-    GameResult, GameState,
+    GameResult, GameState, Player,
 };
 
 #[derive(Clone)]
 pub struct TicTacToe
 {
-    board: Board<u32>,
+    board: Board<Cell>,
     last_move: Option<TicTacToeMove>,
     num_to_win: usize,
 }
@@ -37,7 +37,7 @@ impl GameState for TicTacToe
             for col in 0..self.board.cols()
             {
                 let pos = Position { row, col };
-                if self.board[pos] == 0
+                if self.board[pos] == Cell::Empty
                 {
                     moves.push(TicTacToeMove {
                         position: pos,
@@ -49,28 +49,28 @@ impl GameState for TicTacToe
         moves
     }
 
-    fn player_to_move(&self) -> u32
+    fn player_to_move(&self) -> Player
     {
-        match &self.last_move
+        match self.last_move
         {
             Some(last_move) =>
             {
-                if last_move.player == 1
+                if last_move.player == Player(1)
                 {
-                    2
+                    Player(2)
                 }
                 else
                 {
-                    1
+                    Player(1)
                 }
             },
-            None => 1,
+            None => Player(1),
         }
     }
 
     fn do_move(&mut self, m: Self::Move)
     {
-        self.board[m.position] = m.player;
+        self.board[m.position] = Cell::Piece(m.player);
         self.last_move = Some(m);
     }
 
@@ -93,22 +93,13 @@ impl GameState for TicTacToe
             let mut consecutive = 0;
             let mut new_pos = last_move.position;
 
-            while board[new_pos] == player
+            while board[new_pos] == Cell::Piece(player)
             {
                 consecutive += 1;
 
                 if consecutive >= self.num_to_win
                 {
                     return GameResult::Win(player);
-                    // if player == 1
-                    // {
-                    //     return GameResult::P1Win;
-                    // }
-                    // else
-                    // {
-                    //     debug_assert_eq!(player, 2);
-                    //     return GameResult::P2Win;
-                    // }
                 }
 
                 let irow: i32 = new_pos
@@ -138,21 +129,12 @@ impl GameState for TicTacToe
             consecutive -= 1;
             new_pos = last_move.position;
 
-            while board[new_pos] == player
+            while board[new_pos] == Cell::Piece(player)
             {
                 consecutive += 1;
                 if consecutive >= self.num_to_win
                 {
                     return GameResult::Win(player);
-                    // if player == 1
-                    // {
-                    //     return GameResult::P1Win;
-                    // }
-                    // else
-                    // {
-                    //     assert_eq!(player, 2);
-                    //     return GameResult::P2Win;
-                    // }
                 }
 
                 let irow: i32 = new_pos.row.try_into().unwrap();
@@ -202,13 +184,33 @@ impl Display for TicTacToe
 pub struct TicTacToeMove
 {
     position: Position,
-    player: u32,
+    player: Player,
 }
 
 impl Display for TicTacToeMove
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
-        write!(f, "Player: {}, Position: {}", self.player, self.position)
+        write!(f, "{}, Position: {}", self.player, self.position)
+    }
+}
+
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+enum Cell
+{
+    #[default]
+    Empty,
+    Piece(Player),
+}
+
+impl Display for Cell
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        match self
+        {
+            Cell::Empty => write!(f, "-"),
+            Cell::Piece(p) => write!(f, "{}", p.0),
+        }
     }
 }

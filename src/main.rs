@@ -11,14 +11,14 @@ use players::mcts::MCTSPlayer;
 use players::random::RandomPlayer;
 use players::GamePlayer;
 
-use crate::games::GameResult;
+use crate::games::{GameResult, Player};
 
 #[allow(unused_variables, unused_mut)]
 fn main()
 {
-    let mut game = TicTacToe::new(3, 3, 3);
+    // let mut game = TicTacToe::new(3, 3, 3);
     // let mut game = TicTacToe::new(5, 5, 4);
-    // let mut game = Connect4::new(6, 7, 4);
+    let mut game = Connect4::new(6, 7, 4);
 
     let mcts_player = MCTSPlayer::new(300);
     let rand_player = RandomPlayer {};
@@ -59,11 +59,11 @@ where
         {
             GameResult::Win(player) =>
             {
-                if player == 1
+                if player == Player::new(1)
                 {
                     p1_wins += 1;
                 }
-                else if player == 2
+                else if player == Player::new(2)
                 {
                     p2_wins += 1;
                 }

@@ -13,7 +13,7 @@ pub trait GameState: Clone + Display
 
     fn get_valid_moves(&self) -> Vec<Self::Move>;
 
-    fn player_to_move(&self) -> u32;
+    fn player_to_move(&self) -> Player;
 
     fn do_move(&mut self, m: Self::Move);
 
@@ -34,9 +34,9 @@ pub trait GameState: Clone + Display
             // Let the current player pick their move
             let selected_move = match self.player_to_move()
             {
-                1 => p1.choose_move(self),
-                2 => p2.choose_move(self),
-                n =>
+                Player(1) => p1.choose_move(self),
+                Player(2) => p2.choose_move(self),
+                Player(n) =>
                 {
                     panic!("invalid player: {}", n)
                 },
@@ -74,7 +74,7 @@ pub enum GameResult
 {
     InProgress,
     Draw,
-    Win(u32),
+    Win(Player),
 }
 
 impl Display for GameResult
@@ -88,8 +88,27 @@ impl Display for GameResult
             {
                 GameResult::InProgress => String::from("Game in Progress"),
                 GameResult::Draw => String::from("Draw"),
-                GameResult::Win(player) => format!("Player {player} Wins"),
+                GameResult::Win(player) => format!("{player} Wins"),
             }
         )
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct Player(usize);
+
+impl Player
+{
+    pub fn new(id: usize) -> Player
+    {
+        Player(id)
+    }
+}
+
+impl Display for Player
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        write!(f, "Player {}", self.0)
     }
 }

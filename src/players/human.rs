@@ -17,7 +17,7 @@ impl GamePlayer for HumanPlayer
         println!("{} Moves: ", moves.len());
         for (i, m) in moves.iter().enumerate()
         {
-            println!("    {}: {}", i, m);
+            println!("    Move {i}: {m}");
         }
 
         loop
