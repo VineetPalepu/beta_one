@@ -1,4 +1,7 @@
-use std::fmt::{self, Display, Formatter};
+use std::{
+    collections::VecDeque,
+    fmt::{self, Display, Formatter},
+};
 
 use super::{
     board::{Board, Cell, Position},
@@ -82,75 +85,76 @@ impl GameState for TicTacToe
             None => return GameResult::InProgress,
         };
 
+        let board = &self.board;
+
         let player = last_move.player;
 
-        let board = &self.board;
+        let start_pos = last_move.position;
+
+        fn generate_line(pos: Position, dir: (i128, i128), size: (usize, usize)) -> Vec<Position>
+        {
+            let mut positions = VecDeque::new();
+
+            let start_pos: (i128, i128) =
+                (pos.row.try_into().unwrap(), pos.col.try_into().unwrap());
+
+            fn on_board(pos: (i128, i128), size: (usize, usize)) -> bool
+            {
+                return pos.0 >= 0
+                    && pos.1 >= 0
+                    && pos.0 < size.0.try_into().unwrap()
+                    && pos.1 < size.1.try_into().unwrap();
+            }
+
+            fn tuple_to_pos(tuple: (i128, i128)) -> Position
+            {
+                Position {
+                    row: tuple.0.try_into().unwrap(),
+                    col: tuple.1.try_into().unwrap(),
+                }
+            }
+
+            let mut pos = start_pos;
+            while on_board(pos, size)
+            {
+                positions.push_front(tuple_to_pos(pos));
+                pos.0 += dir.0;
+                pos.1 += dir.1;
+            }
+
+            // start_pos is the last element, which gets added again in the next loop so remove to prevent duplicate
+            positions.pop_back();
+
+            pos = start_pos;
+            while on_board(pos, size)
+            {
+                positions.push_back(tuple_to_pos(pos));
+                pos.0 -= dir.0;
+                pos.1 -= dir.1;
+            }
+
+            positions.into_iter().collect()
+        }
 
         for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
         {
+            let line = generate_line(start_pos, dir, (board.rows(), board.cols()));
             let mut consecutive = 0;
-            let mut new_pos = last_move.position;
-
-            while board[new_pos] == Cell::Piece(player)
+            for pos in line
             {
-                consecutive += 1;
+                if board[pos] == Cell::Piece(player)
+                {
+                    consecutive += 1;
+                }
+                else
+                {
+                    consecutive = 0;
+                }
 
                 if consecutive >= self.num_to_win
                 {
                     return GameResult::Win(player);
                 }
-
-                let irow: i32 = new_pos
-                    .row
-                    .try_into()
-                    .expect("couldn't convert index to integer");
-                let icol: i32 = new_pos
-                    .col
-                    .try_into()
-                    .expect("couldn't convert index to integer");
-
-                let new_row = irow + dir.0;
-                let new_col = icol + dir.1;
-
-                if new_row < 0
-                    || new_row >= board.rows().try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= board.cols().try_into().unwrap()
-                {
-                    break;
-                }
-
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
-            }
-
-            consecutive -= 1;
-            new_pos = last_move.position;
-
-            while board[new_pos] == Cell::Piece(player)
-            {
-                consecutive += 1;
-                if consecutive >= self.num_to_win
-                {
-                    return GameResult::Win(player);
-                }
-
-                let irow: i32 = new_pos.row.try_into().unwrap();
-                let icol: i32 = new_pos.col.try_into().unwrap();
-
-                let new_row = irow - dir.0;
-                let new_col = icol - dir.1;
-
-                if new_row < 0
-                    || new_row >= board.rows().try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= board.cols().try_into().unwrap()
-                {
-                    break;
-                }
-
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
             }
         }
 
@@ -172,8 +176,9 @@ impl Display for TicTacToe
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
+        writeln!(f, "Board: ")?;
         write!(f, "{}", self.board)?;
-
+        write!(f, "Result: {}", self.check_win())?;
         Ok(())
     }
 }

@@ -6,7 +6,7 @@ mod players;
 use games::connect4::Connect4;
 use games::tictactoe::TicTacToe;
 use games::GameState;
-use players::human::HumanPlayer;
+use players::human::{self, HumanPlayer};
 use players::mcts::MCTSPlayer;
 use players::random::RandomPlayer;
 use players::GamePlayer;
@@ -16,15 +16,15 @@ use crate::games::{GameResult, Player};
 #[allow(unused_variables, unused_mut)]
 fn main()
 {
-    // let mut game = TicTacToe::new(3, 3, 3);
+    let mut game = TicTacToe::new(3, 3, 3);
     // let mut game = TicTacToe::new(5, 5, 4);
-    let mut game = Connect4::new(6, 7, 4);
+    // let mut game = Connect4::new(6, 7, 4);
 
     let mcts_player = MCTSPlayer::new(300);
     let rand_player = RandomPlayer {};
     let human_player = HumanPlayer {};
 
-    game.play(&mcts_player, &human_player, true);
+    game.play(&human_player, &human_player, true);
 
     //benchmark_players(&game, &p1, &p2, 1000);
 }
