@@ -125,6 +125,7 @@ impl GameState for Connect4
 
         for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
         {
+            // get a list of all the cells on the row, column, or diagonal going through start_pos
             let line = generate_line(start_pos, dir, (board.rows(), board.cols()));
             let mut consecutive = 0;
             for pos in line
