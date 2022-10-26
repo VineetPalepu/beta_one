@@ -165,8 +165,10 @@ impl Display for TicTacToe
 #[derive(Clone, Copy)]
 pub struct TicTacToeMove
 {
-    position: Position,
-    player: Player,
+    // TODO: create better public interface or determine if this needs to be public
+    // while still allowing tests to be done in different modules
+    pub(crate) position: Position,
+    pub(crate) player: Player,
 }
 
 impl Display for TicTacToeMove
