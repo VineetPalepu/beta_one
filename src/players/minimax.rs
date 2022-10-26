@@ -1,70 +1,76 @@
-use std::fmt::Debug;
-
-use rand::{seq::SliceRandom, thread_rng};
+use std::cmp::max_by_key;
 
 use crate::{
     games::{GameResult, GameState, Player},
     players::GamePlayer,
 };
 
-pub struct MinimaxPlayer {}
+pub struct MinimaxPlayer
+{
+    depth: Option<usize>,
+}
+
+impl MinimaxPlayer
+{
+    pub fn new(depth: Option<usize>) -> MinimaxPlayer
+    {
+        MinimaxPlayer { depth }
+    }
+}
 
 impl GamePlayer for MinimaxPlayer
 {
+    // TODO: choose between equivalent moves by depth?
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where
         Game: crate::games::GameState,
         Game::Move: std::fmt::Display,
     {
-        minimax(game_state, 0).0
+        let mut results = vec![];
+        for m in game_state.get_valid_moves()
+        {
+            let mut new_state = game_state.clone();
+            new_state.do_move(m);
+            let value = minimax(&new_state, self.depth.unwrap_or(usize::MAX));
+            results.push((m, value));
+        }
+
+        results
+            .iter()
+            .max_by(|r1, r2| r1.1.total_cmp(&r2.1))
+            .unwrap()
+            .0
     }
 }
 
-// TODO: add max_depth and evaluate function
-// TODO: choose between equivalent moves by depth?
-fn minimax<T>(state: &T, depth: usize) -> (T::Move, f32)
+fn minimax<T>(state: &T, depth: usize) -> f32
 where
     T: GameState,
 {
+    if depth == 0
+    {
+        todo!("implement evauate function for game state");
+        // TODO:
+        // return evaluate(state);
+    }
     match state.check_win()
     {
         GameResult::InProgress =>
         {},
-        GameResult::Draw => return (state.last_move().unwrap(), 0.0),
-        GameResult::Win(player) => return (state.last_move().unwrap(), f32::INFINITY),
+        GameResult::Draw => return 0.0,
+        GameResult::Win(_) => return f32::INFINITY,
     }
 
-    let mut results = vec![];
+    let mut best_score = f32::NEG_INFINITY;
     for m in state.get_valid_moves()
     {
         let mut new_state = state.clone();
         new_state.do_move(m);
-        // multiply minimax value by -1 since we don't track separate min and max players
-        results.push((m, -1.0 * minimax(&new_state, depth + 1).1));
+        let score = minimax(&new_state, depth - 1);
+        best_score = f32::max(best_score, score);
     }
 
-    // TEMP: DEBUG
-    if depth == 0
-    {
-        print!("Results: ");
-        for r in results.iter()
-        {
-            print!("({}, {}) ", r.0, r.1);
-        }
-        println!();
-    }
-
-    // Maximizing player
-    *results
-        .iter()
-        // sort by minimum: a winning child node evaluaes to +inf,
-        // and when added to results the value is multiplied by -1
-        // thus the best move will have the smallest value
-        .min_by(|x, y| {
-            x.1.partial_cmp(&y.1)
-                .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
-        })
-        .expect("state had no valid moves - should have returned at match block above")
+    -best_score
 }
 
 #[cfg(test)]
