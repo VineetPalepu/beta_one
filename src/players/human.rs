@@ -1,12 +1,12 @@
 use std::fmt::Display;
 use std::io::{self, Write};
 
-use super::Player;
 use crate::games::GameState;
+use crate::players::GamePlayer;
 
 pub struct HumanPlayer;
 
-impl Player for HumanPlayer
+impl GamePlayer for HumanPlayer
 {
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where
@@ -17,7 +17,7 @@ impl Player for HumanPlayer
         println!("{} Moves: ", moves.len());
         for (i, m) in moves.iter().enumerate()
         {
-            println!("    {}: {}", i, m);
+            println!("    Move {i}: {m}");
         }
 
         loop
