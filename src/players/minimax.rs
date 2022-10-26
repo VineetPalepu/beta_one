@@ -21,7 +21,7 @@ impl GamePlayer for MinimaxPlayer
 }
 
 // TODO: add max_depth and evaluate function
-// TODO: choose equivalent moves by depth
+// TODO: choose between equivalent moves by depth?
 fn minimax<T>(state: &T) -> (T::Move, f32)
 where
     T: GameState,

@@ -99,9 +99,9 @@ fn main()
     let human_player = HumanPlayer {};
     let minimax_player = MinimaxPlayer {};
 
-    // game.play(&mcts_player, &minimax_player, true);
+    game.play(&minimax_player, &human_player, true);
 
-    benchmark_players(&game, &mcts_player, &minimax_player, 100);
+    // benchmark_players(&game, &mcts_player, &minimax_player, 100);
 }
 
 fn tree_to_file<N: Display, E: Display>(tree: Graph<N, E>, file: &str)
