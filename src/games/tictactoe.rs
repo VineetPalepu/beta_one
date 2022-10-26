@@ -1,72 +1,44 @@
-use std::fmt::{self, Display, Formatter};
+use std::{
+    collections::VecDeque,
+    fmt::{self, Display, Formatter},
+};
 
-use super::{GameResult, GameState};
+use crate::games::{
+    common::{
+        board::{Board, Cell, Position},
+        generate_line,
+    },
+    GameResult, GameState, Player,
+};
 
+#[derive(Clone)]
 pub struct TicTacToe
 {
-    board: Vec<u32>,
-    last_move: Option<TicTacToeMove>,
-    rows: usize,
-    cols: usize,
+    board: Board<Cell>,
     num_to_win: usize,
+    open_positions: Vec<Position>,
+    last_move: Option<TicTacToeMove>,
 }
 
 impl TicTacToe
 {
     pub fn new(rows: usize, cols: usize, num_to_win: usize) -> TicTacToe
     {
-        TicTacToe {
-            board: vec![0; rows * cols],
-            last_move: None,
-            rows,
-            cols,
-            num_to_win,
-        }
-    }
-
-    fn i2p(&self, index: usize) -> Position
-    {
-        Position {
-            row: index / self.cols,
-            col: index % self.cols,
-        }
-    }
-
-    fn p2i(&self, position: &Position) -> usize
-    {
-        position.row * self.cols + position.col
-    }
-}
-
-impl Clone for TicTacToe
-{
-    fn clone(&self) -> Self
-    {
-        Self {
-            board: self.board.clone(),
-            last_move: self.last_move,
-            rows: self.rows,
-            cols: self.cols,
-            num_to_win: self.num_to_win,
-        }
-    }
-}
-
-impl Display for TicTacToe
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        for i in 0..self.rows
+        let mut open_positions = vec![];
+        for row in 0..rows
         {
-            for j in 0..self.cols
+            for col in 0..cols
             {
-                let index = self.p2i(&Position { row: i, col: j });
-                write!(f, "{} ", self.board[index])?;
+                open_positions.push(Position { row, col });
             }
-            writeln!(f)?;
         }
 
-        Ok(())
+        TicTacToe {
+            board: Board::new(rows, cols),
+            num_to_win,
+            open_positions,
+            last_move: None,
+        }
     }
 }
 
@@ -76,142 +48,94 @@ impl GameState for TicTacToe
 
     fn get_valid_moves(&self) -> Vec<Self::Move>
     {
-        let mut moves: Vec<Self::Move> = vec![];
-        for i in 0..self.board.len()
+        // if game is over return empty vec because there are no valid moves
+        if self.check_win() != GameResult::InProgress
         {
-            if self.board[i] == 0
-            {
-                moves.push(TicTacToeMove {
-                    position: self.i2p(i),
-                    player: self.player_to_move(),
-                });
-            }
+            return vec![];
         }
 
-        moves
+        self.open_positions
+            .iter()
+            .map(|p| TicTacToeMove {
+                position: *p,
+                player: self.player_to_move(),
+            })
+            .collect()
     }
 
-    fn player_to_move(&self) -> u32
+    fn player_to_move(&self) -> Player
     {
-        match &self.last_move
+        match self.last_move
         {
             Some(last_move) =>
             {
-                if last_move.player == 1
+                if last_move.player == Player(1)
                 {
-                    2
+                    Player(2)
                 }
                 else
                 {
-                    1
+                    Player(1)
                 }
             },
-            None => 1,
+            None => Player(1),
         }
     }
 
     fn do_move(&mut self, m: Self::Move)
     {
-        let index = self.p2i(&m.position);
-        self.board[index] = m.player;
+        self.board[m.position] = Cell::Piece(m.player);
         self.last_move = Some(m);
+
+        let index = self
+            .open_positions
+            .iter()
+            .position(|&p| p == m.position)
+            .expect("couldn't find move");
+
+        // can change to swap_remove for better performance if necessary
+        self.open_positions.remove(index);
     }
 
     fn check_win(&self) -> GameResult
     {
-        if self.last_move.is_none()
+        let last_move = match self.last_move
         {
-            return GameResult::InProgress;
-        }
-        let last_move = self.last_move.unwrap();
+            Some(m) => m,
+            None => return GameResult::InProgress,
+        };
 
-        let game_over = self.get_valid_moves().is_empty();
+        let board = &self.board;
 
         let player = last_move.player;
+        let start_pos = last_move.position;
 
         for dir in [(-1, -1), (-1, 0), (-1, 1), (0, 1)]
         {
+            let line = generate_line(start_pos, dir, (board.rows(), board.cols()));
             let mut consecutive = 0;
-            let mut new_pos = last_move.position;
-
-            while self.board[self.p2i(&new_pos)] == player
+            for pos in line
             {
-                consecutive += 1;
+                match board[pos] == Cell::Piece(player)
+                {
+                    true => consecutive += 1,
+                    false => consecutive = 0,
+                }
 
                 if consecutive >= self.num_to_win
                 {
-                    if player == 1
-                    {
-                        return GameResult::P1Win;
-                    }
-                    else
-                    {
-                        debug_assert_eq!(player, 2);
-                        return GameResult::P2Win;
-                    }
+                    return GameResult::Win(player);
                 }
-
-                let irow: i32 = new_pos.row.try_into().unwrap();
-                let icol: i32 = new_pos.col.try_into().unwrap();
-
-                let new_row = irow + dir.0;
-                let new_col = icol + dir.1;
-
-                if new_row < 0
-                    || new_row >= self.rows.try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= self.cols.try_into().unwrap()
-                {
-                    break;
-                }
-
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
-            }
-
-            consecutive -= 1;
-            new_pos = last_move.position;
-
-            while self.board[self.p2i(&new_pos)] == player
-            {
-                consecutive += 1;
-                if consecutive >= self.num_to_win
-                {
-                    if player == 1
-                    {
-                        return GameResult::P1Win;
-                    }
-                    else
-                    {
-                        assert_eq!(player, 2);
-                        return GameResult::P2Win;
-                    }
-                }
-
-                let irow: i32 = new_pos.row.try_into().unwrap();
-                let icol: i32 = new_pos.col.try_into().unwrap();
-
-                let new_row = irow - dir.0;
-                let new_col = icol - dir.1;
-
-                if new_row < 0
-                    || new_row >= self.rows.try_into().unwrap()
-                    || new_col < 0
-                    || new_col >= self.cols.try_into().unwrap()
-                {
-                    break;
-                }
-
-                new_pos.col = new_col.try_into().unwrap();
-                new_pos.row = new_row.try_into().unwrap();
             }
         }
 
-        if game_over
+        // if no one has won yet, and there is no place left to play, it's a draw
+        if self.open_positions.is_empty()
         {
             return GameResult::Draw;
         }
 
+        // if it's not a draw, then the game is still in progress
         GameResult::InProgress
     }
 
@@ -221,49 +145,27 @@ impl GameState for TicTacToe
     }
 }
 
-// Tic Tac Toe helper code
-#[derive(Copy, Clone)]
+impl Display for TicTacToe
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
+    {
+        writeln!(f, "Board: ")?;
+        write!(f, "{}", self.board)?;
+        write!(f, "Result: {}", self.check_win())?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy)]
 pub struct TicTacToeMove
 {
     position: Position,
-    player: u32,
-}
-
-impl TicTacToeMove
-{
-    pub fn new(position: Position, player: u32) -> TicTacToeMove
-    {
-        TicTacToeMove { position, player }
-    }
+    player: Player,
 }
 
 impl Display for TicTacToeMove
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
-        write!(f, "Player: {}, Position: {}", self.player, self.position)
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct Position
-{
-    row: usize,
-    col: usize,
-}
-
-impl Position
-{
-    pub fn new(row: usize, col: usize) -> Position
-    {
-        Position { row, col }
-    }
-}
-
-impl Display for Position
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
-    {
-        write!(f, "({}, {})", self.row, self.col)
+        write!(f, "{}, Position: {}", self.player, self.position)
     }
 }
