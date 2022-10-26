@@ -16,13 +16,13 @@ impl GamePlayer for MinimaxPlayer
         Game: crate::games::GameState,
         Game::Move: std::fmt::Display,
     {
-        minimax(game_state).0
+        minimax(game_state, 0).0
     }
 }
 
 // TODO: add max_depth and evaluate function
 // TODO: choose between equivalent moves by depth?
-fn minimax<T>(state: &T) -> (T::Move, f32)
+fn minimax<T>(state: &T, depth: usize) -> (T::Move, f32)
 where
     T: GameState,
 {
@@ -31,17 +31,7 @@ where
         GameResult::InProgress =>
         {},
         GameResult::Draw => return (state.last_move().unwrap(), 0.0),
-        GameResult::Win(player) =>
-        {
-            if player == Player::new(1)
-            {
-                return (state.last_move().unwrap(), f32::INFINITY);
-            }
-            else
-            {
-                return (state.last_move().unwrap(), f32::NEG_INFINITY);
-            }
-        },
+        GameResult::Win(player) => return (state.last_move().unwrap(), f32::INFINITY),
     }
 
     let mut results = vec![];
@@ -49,38 +39,39 @@ where
     {
         let mut new_state = state.clone();
         new_state.do_move(m);
-        results.push((m, minimax(&new_state).1));
+        // multiply minimax value by -1 since we don't track separate min and max players
+        results.push((m, -1.0 * minimax(&new_state, depth + 1).1));
     }
 
-    if state.player_to_move() == Player::new(1)
+    // TEMP: DEBUG
+    if depth == 0
     {
-        // Maximizing player
-        *results
-            .iter()
-            .max_by(|x, y| {
-                x.1.partial_cmp(&y.1)
-                    .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
-            })
-            .expect("state had no valid moves - should have returned at match block above")
+        print!("Results: ");
+        for r in results.iter()
+        {
+            print!("({}, {}) ", r.0, r.1);
+        }
+        println!();
     }
-    else
-    {
-        // Minimizing player
-        *results
-            .iter()
-            .min_by(|x, y| {
-                x.1.partial_cmp(&y.1)
-                    .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
-            })
-            .expect("state had no valid moves - should have returned at match block above")
-    }
+
+    // Maximizing player
+    *results
+        .iter()
+        // sort by minimum: a winning child node evaluaes to +inf,
+        // and when added to results the value is multiplied by -1
+        // thus the best move will have the smallest value
+        .min_by(|x, y| {
+            x.1.partial_cmp(&y.1)
+                .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
+        })
+        .expect("state had no valid moves - should have returned at match block above")
 }
 
 #[cfg(test)]
 mod test
 {
     use crate::games::{
-        common::board::Position,
+        common::{board::Position, create_game_tree, tree_to_file},
         tictactoe::{TicTacToe, TicTacToeMove},
         GameState, Player,
     };
@@ -99,7 +90,6 @@ mod test
     fn test_minimax()
     {
         let mut game = TicTacToe::new(3, 3, 3);
-        /*
         do_move(&mut game, 0, 0, 1);
         do_move(&mut game, 2, 0, 2);
         do_move(&mut game, 0, 1, 1);
@@ -107,15 +97,17 @@ mod test
         do_move(&mut game, 1, 2, 1);
         do_move(&mut game, 1, 1, 2);
         do_move(&mut game, 2, 2, 1);
-        */
 
+        /*
         do_move(&mut game, 0, 2, 1);
         do_move(&mut game, 0, 0, 2);
         do_move(&mut game, 1, 0, 1);
         do_move(&mut game, 0, 1, 2);
         do_move(&mut game, 2, 0, 1);
         do_move(&mut game, 1, 2, 2);
+        */
 
-        minimax(&game);
+        minimax(&game, 0);
+        tree_to_file(create_game_tree(&game, None), "out\\tree.dot")
     }
 }

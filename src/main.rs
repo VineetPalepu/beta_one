@@ -32,10 +32,9 @@ use crate::games::Player;
 #[allow(unused_variables, unused_mut)]
 fn main()
 {
-    /*
     let mut game = TicTacToe::new(3, 3, 3);
 
-    for _ in 0..6
+    for _ in 0..5
     {
         // game.do_move(game.get_valid_moves()[0]);
         game.do_move(*game.get_valid_moves().choose(&mut thread_rng()).unwrap());
@@ -53,18 +52,17 @@ fn main()
 
     game.do_move(m);
     println!("{game}");
-    */
 
-    let mut game = TicTacToe::new(3, 3, 3);
-    // let mut game = TicTacToe::new(5, 5, 4);
-    // let mut game = Connect4::new(6, 7, 4);
+    // let mut game = TicTacToe::new(3, 3, 3);
+    // // let mut game = TicTacToe::new(5, 5, 4);
+    // // let mut game = Connect4::new(6, 7, 4);
 
-    let mcts_player = MCTSPlayer::new(1000);
-    let rand_player = RandomPlayer {};
-    let human_player = HumanPlayer {};
-    let minimax_player = MinimaxPlayer {};
+    // let mcts_player = MCTSPlayer::new(1000);
+    // let rand_player = RandomPlayer {};
+    // let human_player = HumanPlayer {};
+    // let minimax_player = MinimaxPlayer {};
 
-    game.play(&minimax_player, &human_player, true);
+    // // game.play(&minimax_player, &human_player, true);
 
     // game.benchmark_players(&mcts_player, &minimax_player, 100);
 }
