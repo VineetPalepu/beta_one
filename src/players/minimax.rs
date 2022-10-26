@@ -22,7 +22,7 @@ impl GamePlayer for MinimaxPlayer
 
 // TODO: add max_depth and evaluate function
 // TODO: choose equivalent moves by depth
-fn minimax<T>(state: &T) -> (T::Move, i128)
+fn minimax<T>(state: &T) -> (T::Move, f32)
 where
     T: GameState,
 {
@@ -30,16 +30,16 @@ where
     {
         GameResult::InProgress =>
         {},
-        GameResult::Draw => return (state.last_move().unwrap(), 0),
+        GameResult::Draw => return (state.last_move().unwrap(), 0.0),
         GameResult::Win(player) =>
         {
             if player == Player::new(1)
             {
-                return (state.last_move().unwrap(), 1);
+                return (state.last_move().unwrap(), f32::INFINITY);
             }
             else
             {
-                return (state.last_move().unwrap(), -1);
+                return (state.last_move().unwrap(), f32::NEG_INFINITY);
             }
         },
     }
@@ -57,7 +57,10 @@ where
         // Maximizing player
         *results
             .iter()
-            .max_by(|x, y| x.1.cmp(&y.1))
+            .max_by(|x, y| {
+                x.1.partial_cmp(&y.1)
+                    .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
+            })
             .expect("state had no valid moves - should have returned at match block above")
     }
     else
@@ -65,7 +68,10 @@ where
         // Minimizing player
         *results
             .iter()
-            .min_by(|x, y| x.1.cmp(&y.1))
+            .min_by(|x, y| {
+                x.1.partial_cmp(&y.1)
+                    .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
+            })
             .expect("state had no valid moves - should have returned at match block above")
     }
 }
