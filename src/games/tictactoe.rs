@@ -151,15 +151,24 @@ impl Display for TicTacToe
     {
         writeln!(f, "Board: ")?;
         write!(f, "{}", self.board)?;
-        write!(f, "Result: {}", self.check_win())?;
+        if self.check_win() == GameResult::InProgress
+        {
+            writeln!(f, "Next Player: {}", self.player_to_move())?;
+        }
+        else
+        {
+            writeln!(f, "Result: {}", self.check_win())?;
+        }
         Ok(())
     }
 }
 #[derive(Clone, Copy)]
 pub struct TicTacToeMove
 {
-    position: Position,
-    player: Player,
+    // TODO: create better public interface or determine if this needs to be public
+    // while still allowing tests to be done in different modules
+    pub(crate) position: Position,
+    pub(crate) player: Player,
 }
 
 impl Display for TicTacToeMove
