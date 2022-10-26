@@ -166,7 +166,14 @@ impl Display for Connect4
     {
         writeln!(f, "Board: ")?;
         write!(f, "{}", self.board)?;
-        write!(f, "Result: {}", self.check_win())?;
+        if self.check_win() == GameResult::InProgress
+        {
+            writeln!(f, "Next Player: {}", self.player_to_move())?;
+        }
+        else
+        {
+            writeln!(f, "Result: {}", self.check_win())?;
+        }
         Ok(())
     }
 }

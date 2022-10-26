@@ -64,15 +64,15 @@ where
 #[allow(unused_variables, unused_mut)]
 fn main()
 {
-    let mut game = Connect4::new(6, 7, 4);
+    let mut game = TicTacToe::new(3, 3, 3);
 
-    for _ in 0..20
+    for _ in 0..4
     {
         game.do_move(*game.get_valid_moves().choose(&mut thread_rng()).unwrap());
         println!("{game}");
     }
 
-    let tree = create_game_tree(&game, Some(3));
+    let tree = create_game_tree(&game, None);
     tree_to_file(tree, "out\\tree.dot")
 
     /*
@@ -94,7 +94,7 @@ fn tree_to_file<N: Display, E: Display>(tree: Graph<N, E>, file: &str)
 {
     let file = File::create(file).unwrap();
     let mut file_writer = BufWriter::new(file);
-    let data = Dot::new(&tree);
+    let data = Dot::with_config(&tree, &[]);
     writeln!(file_writer, "{}", data).unwrap();
 }
 
