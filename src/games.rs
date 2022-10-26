@@ -67,6 +67,40 @@ pub trait GameState: Clone + Display
 
         game_result
     }
+
+    fn benchmark_players(&self, p1: &impl GamePlayer, p2: &impl GamePlayer, iterations: u32)
+    {
+        let mut p1_wins = 0;
+        let mut p2_wins = 0;
+        let mut draws = 0;
+
+        for _ in 0..iterations
+        {
+            let mut initial_state = self.clone();
+
+            let winner = initial_state.play(p1, p2, false);
+            match winner
+            {
+                GameResult::Win(player) =>
+                {
+                    if player == Player::new(1)
+                    {
+                        p1_wins += 1;
+                    }
+                    else if player == Player::new(2)
+                    {
+                        p2_wins += 1;
+                    }
+                },
+                GameResult::Draw => draws += 1,
+                GameResult::InProgress =>
+                {},
+            }
+        }
+
+        println!("Games: {iterations}");
+        println!("P1 Wins: {p1_wins} / Draws: {draws} / P2 Wins: {p2_wins}");
+    }
 }
 
 #[derive(PartialEq, Eq)]
