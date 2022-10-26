@@ -32,11 +32,8 @@ use crate::games::Player;
 #[allow(unused_variables, unused_mut)]
 fn main()
 {
+    /*
     let mut game = TicTacToe::new(3, 3, 3);
-
-    // TODO: make game tree explorer using graph viz that shows one node (and its neighbors) at a time and lets you navigate to
-    // parent or children notes
-    // should be live generated so that it only generates to the depth needed
 
     for _ in 0..6
     {
@@ -56,6 +53,7 @@ fn main()
 
     game.do_move(m);
     println!("{game}");
+    */
 
     let mut game = TicTacToe::new(3, 3, 3);
     // let mut game = TicTacToe::new(5, 5, 4);
