@@ -1,8 +1,8 @@
-use super::Player;
+use crate::players::GamePlayer;
 
 pub struct MinimaxPlayer {}
 
-impl Player for MinimaxPlayer
+impl GamePlayer for MinimaxPlayer
 {
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where
