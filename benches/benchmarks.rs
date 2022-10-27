@@ -4,32 +4,40 @@ use beta_one::{
 };
 use criterion::{criterion_group, criterion_main, Criterion};
 
-fn minimax_benchmark(c: &mut Criterion)
+fn minimax_tictactoe_benchmark(c: &mut Criterion)
 {
-    let mut group = c.benchmark_group("Minimax Benchmarks");
+    let mut player = MinimaxPlayer::new(None);
     let mut game = TicTacToe::new(3, 3, 3);
     game.do_move(game.get_valid_moves()[0]);
-    let mut player = MinimaxPlayer::new(None);
-    // group.bench_function("choose_move(TicTacToe)", |b| {
-    //     b.iter(|| {
-    //         player.choose_move(&game);
-    //     })
-    // });
-
-    let mut game = Connect4::new(6, 7, 4);
-    // TODO: seed random number so that it doesn't crash if the game ends by chance
-    let mut random = RandomPlayer::from_seed(3284);
-    for _ in 0..20
-    {
-        game.do_move(random.choose_move(&game));
-        println!("{game}");
-    }
-    group.bench_function("choose_move(Connect4)", |b| {
-        b.iter(|| player.choose_move(&game))
+    c.bench_function("choose_move(TicTacToe)", |b| {
+        b.iter(|| {
+            player.choose_move(&game);
+        })
     });
-
-    group.finish()
 }
 
-criterion_group!(minimax, minimax_benchmark);
+fn minimax_connect4_benchmark(c: &mut Criterion)
+{
+    let mut player = MinimaxPlayer::new(None);
+    let mut game = Connect4::new(6, 7, 4);
+    for i in 1..=18
+    {
+        game.do_move(game.get_valid_moves()[0]);
+    }
+
+    for i in 19..=26
+    {
+        game.do_move(game.get_valid_moves()[1]);
+    }
+
+    c.bench_function("choose_move(Connect4)", |b| {
+        b.iter(|| player.choose_move(&game))
+    });
+}
+
+criterion_group!(
+    minimax,
+    minimax_tictactoe_benchmark,
+    minimax_connect4_benchmark
+);
 criterion_main!(minimax);
