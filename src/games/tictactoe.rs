@@ -82,7 +82,7 @@ impl GameState for TicTacToe
         }
     }
 
-    fn do_move(&mut self, m: Self::Move)
+    fn do_move(mut self, m: Self::Move) -> Self
     {
         self.board[m.position] = Cell::Piece(m.player);
         self.last_move = Some(m);
@@ -95,6 +95,8 @@ impl GameState for TicTacToe
 
         // can change to swap_remove for better performance if necessary
         self.open_positions.remove(index);
+
+        self
     }
 
     fn check_win(&self) -> GameResult

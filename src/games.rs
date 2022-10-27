@@ -15,14 +15,15 @@ pub trait GameState: Clone + Display
 
     fn player_to_move(&self) -> Player;
 
-    fn do_move(&mut self, m: Self::Move);
+    fn do_move(self, m: Self::Move) -> Self;
 
     fn last_move(&self) -> Option<Self::Move>;
 
     fn check_win(&self) -> GameResult;
 
+    // TODO: possibly also return GameState instead of GameResult
     fn play(
-        &mut self,
+        mut self,
         p1: &mut impl GamePlayer,
         p2: &mut impl GamePlayer,
         verbose: bool,
@@ -39,8 +40,8 @@ pub trait GameState: Clone + Display
             // Let the current player pick their move
             let selected_move = match self.player_to_move()
             {
-                Player(1) => p1.choose_move(self),
-                Player(2) => p2.choose_move(self),
+                Player(1) => p1.choose_move(&self),
+                Player(2) => p2.choose_move(&self),
                 Player(n) =>
                 {
                     panic!("invalid player: {}", n)
@@ -54,7 +55,7 @@ pub trait GameState: Clone + Display
             }
 
             // Update game based on the move
-            self.do_move(selected_move);
+            self = self.do_move(selected_move);
         }
 
         // Print final game state
@@ -81,7 +82,7 @@ pub trait GameState: Clone + Display
 
         for _ in 0..iterations
         {
-            let mut initial_state = self.clone();
+            let initial_state = self.clone();
 
             let winner = initial_state.play(p1, p2, false);
             match winner

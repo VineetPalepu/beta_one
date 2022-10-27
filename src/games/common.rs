@@ -42,8 +42,7 @@ where
         .clone();
     for m in state.get_valid_moves()
     {
-        let mut new_state = state.clone();
-        new_state.do_move(m);
+        let new_state = state.clone().do_move(m);
         let new_node = tree.add_node(new_state);
         tree.add_edge(node, new_node, m);
 

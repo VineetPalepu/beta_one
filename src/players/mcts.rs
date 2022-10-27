@@ -114,8 +114,7 @@ where
         let moves = self.get(node).data.get_valid_moves();
         for m in moves
         {
-            let mut state = self.get(node).data.clone();
-            state.do_move(m);
+            let state = self.get(node).data.clone().do_move(m);
             let child = self.insert(state, node);
             self.get_mut(node).children.push(child);
         }
@@ -128,7 +127,7 @@ where
 
     fn simulate_node(&mut self, node: &NodeRef) -> GameResult
     {
-        let player = RandomPlayer;
+        let player = RandomPlayer::new();
         self.get(node)
             .data
             .clone()
