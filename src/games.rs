@@ -21,7 +21,12 @@ pub trait GameState: Clone + Display
 
     fn check_win(&self) -> GameResult;
 
-    fn play(&mut self, p1: &impl GamePlayer, p2: &impl GamePlayer, verbose: bool) -> GameResult
+    fn play(
+        &mut self,
+        p1: &mut impl GamePlayer,
+        p2: &mut impl GamePlayer,
+        verbose: bool,
+    ) -> GameResult
     {
         while self.check_win() == GameResult::InProgress
         {
@@ -68,7 +73,7 @@ pub trait GameState: Clone + Display
         game_result
     }
 
-    fn benchmark_players(&self, p1: &impl GamePlayer, p2: &impl GamePlayer, iterations: u32)
+    fn benchmark_players(&self, p1: &mut impl GamePlayer, p2: &mut impl GamePlayer, iterations: u32)
     {
         let mut p1_wins = 0;
         let mut p2_wins = 0;

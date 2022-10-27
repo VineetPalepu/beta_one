@@ -3,12 +3,12 @@ use std::io::{self, Write};
 
 use crate::games::GameState;
 use crate::players::GamePlayer;
-
+#[derive(Clone, Copy)]
 pub struct HumanPlayer;
 
 impl GamePlayer for HumanPlayer
 {
-    fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
+    fn choose_move<Game>(&mut self, game_state: &Game) -> Game::Move
     where
         Game: GameState,
         Game::Move: Display,
