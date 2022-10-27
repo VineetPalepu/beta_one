@@ -15,15 +15,12 @@ pub trait GameState: Clone + Display
 
     fn player_to_move(&self) -> Player;
 
-    // TODO: determine if do_move should consume a state and produce an new state
     fn do_move(self, m: Self::Move) -> Self;
 
     fn last_move(&self) -> Option<Self::Move>;
 
     fn check_win(&self) -> GameResult;
 
-    // TODO: determine if play should consume a GameState and produce a new one or
-    // modify the given state
     // TODO: possibly also return GameState instead of GameResult
     fn play(
         mut self,
@@ -85,7 +82,7 @@ pub trait GameState: Clone + Display
 
         for _ in 0..iterations
         {
-            let mut initial_state = self.clone();
+            let initial_state = self.clone();
 
             let winner = initial_state.play(p1, p2, false);
             match winner
