@@ -1,86 +1,83 @@
-use std::fmt::Debug;
-
-use rand::{seq::SliceRandom, thread_rng};
+use std::cmp::max_by_key;
 
 use crate::{
     games::{GameResult, GameState, Player},
     players::GamePlayer,
 };
 
-pub struct MinimaxPlayer {}
+pub struct MinimaxPlayer
+{
+    depth: Option<usize>,
+}
+
+impl MinimaxPlayer
+{
+    pub fn new(depth: Option<usize>) -> MinimaxPlayer
+    {
+        MinimaxPlayer { depth }
+    }
+}
 
 impl GamePlayer for MinimaxPlayer
 {
+    // TODO: choose between equivalent moves by depth?
     fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
     where
         Game: crate::games::GameState,
         Game::Move: std::fmt::Display,
     {
-        minimax(game_state).0
+        let mut results = vec![];
+        for m in game_state.get_valid_moves()
+        {
+            let mut new_state = game_state.clone();
+            new_state.do_move(m);
+            let value = minimax(&new_state, self.depth.unwrap_or(usize::MAX));
+            results.push((m, value));
+        }
+
+        results
+            .iter()
+            .max_by(|r1, r2| r1.1.total_cmp(&r2.1))
+            .unwrap()
+            .0
     }
 }
 
-// TODO: add max_depth and evaluate function
-// TODO: choose between equivalent moves by depth?
-fn minimax<T>(state: &T) -> (T::Move, f32)
+fn minimax<T>(state: &T, depth: usize) -> f32
 where
     T: GameState,
 {
+    if depth == 0
+    {
+        todo!("implement evauate function for game state");
+        // TODO:
+        // return evaluate(state);
+    }
     match state.check_win()
     {
         GameResult::InProgress =>
         {},
-        GameResult::Draw => return (state.last_move().unwrap(), 0.0),
-        GameResult::Win(player) =>
-        {
-            if player == Player::new(1)
-            {
-                return (state.last_move().unwrap(), f32::INFINITY);
-            }
-            else
-            {
-                return (state.last_move().unwrap(), f32::NEG_INFINITY);
-            }
-        },
+        GameResult::Draw => return 0.0,
+        GameResult::Win(_) => return f32::INFINITY,
     }
 
-    let mut results = vec![];
+    let mut best_score = f32::NEG_INFINITY;
     for m in state.get_valid_moves()
     {
         let mut new_state = state.clone();
         new_state.do_move(m);
-        results.push((m, minimax(&new_state).1));
+        let score = minimax(&new_state, depth - 1);
+        best_score = f32::max(best_score, score);
     }
 
-    if state.player_to_move() == Player::new(1)
-    {
-        // Maximizing player
-        *results
-            .iter()
-            .max_by(|x, y| {
-                x.1.partial_cmp(&y.1)
-                    .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
-            })
-            .expect("state had no valid moves - should have returned at match block above")
-    }
-    else
-    {
-        // Minimizing player
-        *results
-            .iter()
-            .min_by(|x, y| {
-                x.1.partial_cmp(&y.1)
-                    .unwrap_or_else(|| panic!("couldn't compare {} and {}", x.1, y.1))
-            })
-            .expect("state had no valid moves - should have returned at match block above")
-    }
+    -best_score
 }
 
 #[cfg(test)]
 mod test
 {
     use crate::games::{
-        common::board::Position,
+        common::{board::Position, create_game_tree, tree_to_file},
         tictactoe::{TicTacToe, TicTacToeMove},
         GameState, Player,
     };
@@ -99,7 +96,6 @@ mod test
     fn test_minimax()
     {
         let mut game = TicTacToe::new(3, 3, 3);
-        /*
         do_move(&mut game, 0, 0, 1);
         do_move(&mut game, 2, 0, 2);
         do_move(&mut game, 0, 1, 1);
@@ -107,15 +103,17 @@ mod test
         do_move(&mut game, 1, 2, 1);
         do_move(&mut game, 1, 1, 2);
         do_move(&mut game, 2, 2, 1);
-        */
 
+        /*
         do_move(&mut game, 0, 2, 1);
         do_move(&mut game, 0, 0, 2);
         do_move(&mut game, 1, 0, 1);
         do_move(&mut game, 0, 1, 2);
         do_move(&mut game, 2, 0, 1);
         do_move(&mut game, 1, 2, 2);
+        */
 
-        minimax(&game);
+        minimax(&game, 0);
+        tree_to_file(create_game_tree(&game, None), "out\\tree.dot")
     }
 }
