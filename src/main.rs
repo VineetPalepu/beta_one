@@ -66,9 +66,12 @@ fn main()
     let human_player = HumanPlayer {};
     let minimax_player = MinimaxPlayer::new(None);
 
+    let mut p1 = minimax_player;
+    let mut p2 = minimax_player;
+
     // game.play(&minimax_player, &human_player, true);
 
-    game.benchmark_players(&minimax_player, &mcts_player, 10);
+    game.benchmark_players(&mut p1, &mut p2, 10);
 }
 
 #[allow(dead_code)]

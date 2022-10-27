@@ -2,11 +2,12 @@ use rand::Rng;
 
 use crate::players::GamePlayer;
 
+#[derive(Clone, Copy)]
 pub struct RandomPlayer;
 
 impl GamePlayer for RandomPlayer
 {
-    fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
+    fn choose_move<Game>(&mut self, game_state: &Game) -> Game::Move
     where
         Game: crate::games::GameState,
         //Game::Move: std::fmt::Display,

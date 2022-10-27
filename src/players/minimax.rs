@@ -5,6 +5,7 @@ use crate::{
     players::GamePlayer,
 };
 
+#[derive(Clone, Copy)]
 pub struct MinimaxPlayer
 {
     depth: Option<usize>,
@@ -21,7 +22,7 @@ impl MinimaxPlayer
 impl GamePlayer for MinimaxPlayer
 {
     // TODO: choose between equivalent moves by depth?
-    fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
+    fn choose_move<Game>(&mut self, game_state: &Game) -> Game::Move
     where
         Game: crate::games::GameState,
         Game::Move: std::fmt::Display,

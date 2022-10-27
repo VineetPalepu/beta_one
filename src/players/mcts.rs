@@ -11,6 +11,7 @@ use self::arena_tree::{ArenaTree, NodeRef};
 
 use crate::players::{random::RandomPlayer, GamePlayer};
 
+#[derive(Clone, Copy)]
 pub struct MCTSPlayer
 {
     iterations: usize,
@@ -26,7 +27,7 @@ impl MCTSPlayer
 
 impl GamePlayer for MCTSPlayer
 {
-    fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
+    fn choose_move<Game>(&mut self, game_state: &Game) -> Game::Move
     where
         Game: GameState,
         Game::Move: Display,
@@ -128,7 +129,10 @@ where
     fn simulate_node(&mut self, node: &NodeRef) -> GameResult
     {
         let player = RandomPlayer;
-        self.get(node).data.clone().play(&player, &player, false)
+        self.get(node)
+            .data
+            .clone()
+            .play(&mut player.clone(), &mut player.clone(), false)
     }
 
     fn backprop_result(&mut self, node: &NodeRef, result: GameResult)
