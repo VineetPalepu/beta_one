@@ -5,6 +5,7 @@ use rand::{
 
 use crate::{games::GameState, players::GamePlayer};
 
+#[derive(Clone)]
 pub struct RandomPlayer
 {
     rng: StdRng,
@@ -27,15 +28,13 @@ impl RandomPlayer
 
 impl GamePlayer for RandomPlayer
 {
-    // TODO: make &mut self
-    fn choose_move<T>(&self, game_state: &T) -> T::Move
+    fn choose_move<T>(&mut self, game_state: &T) -> T::Move
     where
         T: crate::games::GameState,
     {
         let moves = game_state.get_valid_moves();
 
-        let mut rng = self.rng.clone();
-        let index = rng.gen_range(0..moves.len());
+        let index = self.rng.gen_range(0..moves.len());
 
         moves[index]
     }
