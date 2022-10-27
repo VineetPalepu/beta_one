@@ -16,7 +16,7 @@ pub trait GameState: Clone + Display
     fn player_to_move(&self) -> Player;
 
     // TODO: determine if do_move should consume a state and produce an new state
-    fn do_move(&mut self, m: Self::Move);
+    fn do_move(&mut self, m: Self::Move) -> &mut Self;
 
     fn last_move(&self) -> Option<Self::Move>;
 
