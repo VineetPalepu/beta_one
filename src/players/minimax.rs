@@ -30,8 +30,7 @@ impl GamePlayer for MinimaxPlayer
         let mut results = vec![];
         for m in game_state.get_valid_moves()
         {
-            let mut new_state = game_state.clone();
-            new_state.do_move(m);
+            let new_state = game_state.clone().do_move(m);
             let value = minimax(&new_state, self.depth.unwrap_or(usize::MAX));
             results.push((m, value));
         }
@@ -65,8 +64,7 @@ where
     let mut best_score = f32::NEG_INFINITY;
     for m in state.get_valid_moves()
     {
-        let mut new_state = state.clone();
-        new_state.do_move(m);
+        let new_state = state.clone().do_move(m);
         let score = minimax(&new_state, depth - 1);
         best_score = f32::max(best_score, score);
     }
@@ -85,36 +83,38 @@ mod test
 
     use super::minimax;
 
-    fn do_move(game: &mut TicTacToe, row: usize, col: usize, player: usize)
+    fn do_move(game: TicTacToe, row: usize, col: usize, player: usize) -> TicTacToe
     {
         game.do_move(TicTacToeMove {
             position: Position { row, col },
             player: Player::new(player),
-        });
+        })
     }
 
     #[test]
     fn test_minimax()
     {
         let mut game = TicTacToe::new(3, 3, 3);
-        do_move(&mut game, 0, 0, 1);
-        do_move(&mut game, 2, 0, 2);
-        do_move(&mut game, 0, 1, 1);
-        do_move(&mut game, 2, 1, 2);
-        do_move(&mut game, 1, 2, 1);
-        do_move(&mut game, 1, 1, 2);
-        do_move(&mut game, 2, 2, 1);
+        game = do_move(game, 0, 0, 1);
+        game = do_move(game, 2, 0, 2);
+        game = do_move(game, 0, 1, 1);
+        game = do_move(game, 2, 1, 2);
+        game = do_move(game, 1, 2, 1);
+        game = do_move(game, 1, 1, 2);
+        game = do_move(game, 2, 2, 1);
 
         /*
-        do_move(&mut game, 0, 2, 1);
-        do_move(&mut game, 0, 0, 2);
-        do_move(&mut game, 1, 0, 1);
-        do_move(&mut game, 0, 1, 2);
-        do_move(&mut game, 2, 0, 1);
-        do_move(&mut game, 1, 2, 2);
+        game = do_move(game, 0, 2, 1);
+        game = do_move(game, 0, 0, 2);
+        game = do_move(game, 1, 0, 1);
+        game = do_move(game, 0, 1, 2);
+        game = do_move(game, 2, 0, 1);
+        game = do_move(game, 1, 2, 2);
         */
 
         minimax(&game, 0);
-        tree_to_file(create_game_tree(&game, None), "out\\tree.dot")
+        tree_to_file(create_game_tree(&game, None), "out\\tree.dot");
+
+        todo!()
     }
 }

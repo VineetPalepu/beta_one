@@ -16,7 +16,7 @@ pub trait GameState: Clone + Display
     fn player_to_move(&self) -> Player;
 
     // TODO: determine if do_move should consume a state and produce an new state
-    fn do_move(&mut self, m: Self::Move) -> &mut Self;
+    fn do_move(self, m: Self::Move) -> Self;
 
     fn last_move(&self) -> Option<Self::Move>;
 
@@ -24,8 +24,9 @@ pub trait GameState: Clone + Display
 
     // TODO: determine if play should consume a GameState and produce a new one or
     // modify the given state
+    // TODO: possibly also return GameState instead of GameResult
     fn play(
-        &mut self,
+        mut self,
         p1: &mut impl GamePlayer,
         p2: &mut impl GamePlayer,
         verbose: bool,
@@ -42,8 +43,8 @@ pub trait GameState: Clone + Display
             // Let the current player pick their move
             let selected_move = match self.player_to_move()
             {
-                Player(1) => p1.choose_move(self),
-                Player(2) => p2.choose_move(self),
+                Player(1) => p1.choose_move(&self),
+                Player(2) => p2.choose_move(&self),
                 Player(n) =>
                 {
                     panic!("invalid player: {}", n)
@@ -57,7 +58,7 @@ pub trait GameState: Clone + Display
             }
 
             // Update game based on the move
-            self.do_move(selected_move);
+            self = self.do_move(selected_move);
         }
 
         // Print final game state

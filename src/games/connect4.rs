@@ -73,7 +73,7 @@ impl GameState for Connect4
         }
     }
 
-    fn do_move(&mut self, m: Self::Move) -> &mut Self
+    fn do_move(mut self, m: Self::Move) -> Self
     {
         // change board data based on move
         self.board[m.position] = Cell::Piece(m.player);
