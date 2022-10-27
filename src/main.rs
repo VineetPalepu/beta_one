@@ -62,7 +62,7 @@ fn main()
     // let mut game = Connect4::new(6, 7, 4);
 
     let mcts_player = MCTSPlayer::new(3000);
-    let rand_player = RandomPlayer {};
+    let rand_player = RandomPlayer::new();
     let human_player = HumanPlayer {};
     let minimax_player = MinimaxPlayer::new(None);
 

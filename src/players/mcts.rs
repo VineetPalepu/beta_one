@@ -127,7 +127,7 @@ where
 
     fn simulate_node(&mut self, node: &NodeRef) -> GameResult
     {
-        let player = RandomPlayer;
+        let player = RandomPlayer::new();
         self.get(node).data.clone().play(&player, &player, false)
     }
 

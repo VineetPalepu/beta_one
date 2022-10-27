@@ -1,19 +1,40 @@
-use rand::Rng;
+use rand::{
+    rngs::{StdRng, ThreadRng},
+    thread_rng, Rng, SeedableRng,
+};
 
-use crate::players::GamePlayer;
+use crate::{games::GameState, players::GamePlayer};
 
-pub struct RandomPlayer;
+pub struct RandomPlayer
+{
+    rng: StdRng,
+}
+
+impl RandomPlayer
+{
+    pub fn new() -> RandomPlayer
+    {
+        RandomPlayer::from_seed(thread_rng().gen())
+    }
+
+    pub fn from_seed(seed: u64) -> RandomPlayer
+    {
+        RandomPlayer {
+            rng: StdRng::seed_from_u64(seed),
+        }
+    }
+}
 
 impl GamePlayer for RandomPlayer
 {
-    fn choose_move<Game>(&self, game_state: &Game) -> Game::Move
+    // TODO: make &mut self
+    fn choose_move<T>(&self, game_state: &T) -> T::Move
     where
-        Game: crate::games::GameState,
-        //Game::Move: std::fmt::Display,
+        T: crate::games::GameState,
     {
         let moves = game_state.get_valid_moves();
-        let mut rng = rand::thread_rng();
 
+        let mut rng = self.rng.clone();
         let index = rng.gen_range(0..moves.len());
 
         moves[index]
