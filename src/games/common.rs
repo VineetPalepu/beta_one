@@ -60,25 +60,27 @@ pub fn tree_to_file<N: Display, E: Display>(tree: Graph<N, E>, file: &str)
 
 pub fn generate_line(pos: Position, dir: (i128, i128), size: (usize, usize)) -> Vec<Position>
 {
-    let mut positions = VecDeque::new();
+    let mut positions = Vec::new();
 
     let start_pos: (i128, i128) = (pos.row.try_into().unwrap(), pos.col.try_into().unwrap());
 
     let mut pos = start_pos;
     while on_board(pos, size)
     {
-        positions.push_front(tuple_to_pos(pos));
+        positions.push(tuple_to_pos(pos));
         pos.0 += dir.0;
         pos.1 += dir.1;
     }
 
+    positions.reverse();
+
     // start_pos is the last element, which gets added again in the next loop so remove to prevent duplicate
-    positions.pop_back();
+    positions.pop();
 
     pos = start_pos;
     while on_board(pos, size)
     {
-        positions.push_back(tuple_to_pos(pos));
+        positions.push(tuple_to_pos(pos));
         pos.0 -= dir.0;
         pos.1 -= dir.1;
     }
