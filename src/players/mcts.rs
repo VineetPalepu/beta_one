@@ -12,20 +12,39 @@ use self::arena_tree::{ArenaTree, NodeRef};
 use crate::players::{random::RandomPlayer, GamePlayer};
 
 #[derive(Clone, Copy)]
-pub struct MCTSPlayer
+pub struct MCTSPlayer<T>
+where
+    T: GamePlayer,
 {
     iterations: usize,
+    simulation_player: T,
 }
 
-impl MCTSPlayer
+impl MCTSPlayer<RandomPlayer>
 {
-    pub fn new(iterations: usize) -> MCTSPlayer
+    pub fn new(iterations: usize) -> MCTSPlayer<RandomPlayer>
     {
-        MCTSPlayer { iterations }
+        MCTSPlayer {
+            iterations,
+            simulation_player: RandomPlayer::new(),
+        }
     }
 }
 
-impl GamePlayer for MCTSPlayer
+impl<T> MCTSPlayer<T>
+where
+    T: GamePlayer,
+{
+    pub fn set_player(mut self, player: T) -> MCTSPlayer<T>
+    {
+        self.simulation_player = player;
+        self
+    }
+}
+
+impl<T> GamePlayer for MCTSPlayer<T>
+where
+    T: GamePlayer,
 {
     fn choose_move<Game>(&mut self, game_state: &Game) -> Game::Move
     where
@@ -46,7 +65,8 @@ impl GamePlayer for MCTSPlayer
 
                 let node_to_simulate = *tree.children_of(&leaf).choose(&mut thread_rng()).unwrap();
 
-                let result = tree.simulate_node(&node_to_simulate);
+                let mut player = self.simulation_player.clone();
+                let result = tree.simulate_node(&node_to_simulate, &mut player);
                 tree.backprop_result(&leaf, result)
             }
             else
@@ -71,7 +91,7 @@ trait GameStateTree
     fn select_leaf_node(&self) -> NodeRef;
     fn create_children_for(&mut self, node: &NodeRef);
     fn is_node_termnial(&self, node: &NodeRef) -> bool;
-    fn simulate_node(&mut self, node: &NodeRef) -> GameResult;
+    fn simulate_node(&mut self, node: &NodeRef, player: &mut impl GamePlayer) -> GameResult;
     fn backprop_result(&mut self, node: &NodeRef, result: GameResult);
 
     fn get_ucb_value(&self, node: &NodeRef) -> f64;
@@ -125,8 +145,9 @@ where
         self.get(node).data.check_win() != GameResult::InProgress
     }
 
-    fn simulate_node(&mut self, node: &NodeRef) -> GameResult
+    fn simulate_node(&mut self, node: &NodeRef, player: &mut impl GamePlayer) -> GameResult
     {
+        // TODO: allow seeding random so that mcts is deterministic for benchmarking
         let player = RandomPlayer::new();
         self.get(node)
             .data

@@ -56,7 +56,7 @@ fn mcts_tictactoe_benchmark(c: &mut Criterion)
 {
     let mut group = c.benchmark_group("MCTS/Tic Tac Toe");
 
-    let mut player = MCTSPlayer::new(300);
+    let mut player = MCTSPlayer::new(300).set_player(RandomPlayer::from_seed(234));
     let game = TicTacToe::new(3, 3, 3);
 
     group.bench_function("choose_move", |b| b.iter(|| player.choose_move(&game)));
@@ -68,7 +68,7 @@ fn mcts_connect4_benchmark(c: &mut Criterion)
 {
     let mut group = c.benchmark_group("MCTS/Connect 4");
 
-    let mut player = MCTSPlayer::new(300);
+    let mut player = MCTSPlayer::new(300).set_player(RandomPlayer::from_seed(234));
     let game = Connect4::new(6, 7, 4);
 
     group.bench_function("choose_move", |b| b.iter(|| player.choose_move(&game)));
@@ -82,7 +82,7 @@ fn play_tictactoe_mcts(c: &mut Criterion)
 
     let game = TicTacToe::new(3, 3, 3);
 
-    let player = MCTSPlayer::new(100);
+    let player = MCTSPlayer::new(100).set_player(RandomPlayer::from_seed(234));
     group.bench_function("play(100 iters)", |b| {
         b.iter(|| {
             game.clone()
@@ -90,7 +90,7 @@ fn play_tictactoe_mcts(c: &mut Criterion)
         })
     });
 
-    let player = MCTSPlayer::new(300);
+    let player = MCTSPlayer::new(300).set_player(RandomPlayer::from_seed(234));
     group.bench_function("play(300 iters)", |b| {
         b.iter(|| {
             game.clone()
@@ -107,14 +107,14 @@ fn play_connect4_mcts(c: &mut Criterion)
 
     let game = Connect4::new(6, 7, 4);
 
-    let player = MCTSPlayer::new(100);
+    let player = MCTSPlayer::new(100).set_player(RandomPlayer::from_seed(234));
     group.bench_function("play(100 iters)", |b| {
         b.iter(|| {
             game.clone()
                 .play(&mut player.clone(), &mut player.clone(), false)
         })
     });
-    let player = MCTSPlayer::new(300);
+    let player = MCTSPlayer::new(300).set_player(RandomPlayer::from_seed(234));
     group.bench_function("play(300 iters)", |b| {
         b.iter(|| {
             game.clone()
