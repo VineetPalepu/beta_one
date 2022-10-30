@@ -29,6 +29,10 @@ use crate::games::common::tree_to_file;
 use crate::games::GameResult;
 use crate::games::Player;
 
+// TODO: add rotation invariance for games like tic tac toe
+// that is, a board should be considered the same as another if it is only a rotation or mirror image
+// in 3x3 ttt this collapses the set of initial states to 3: center, corner, or edge
+// TODO: use this to generate rotation invariant game tree
 #[allow(unused_variables, unused_mut)]
 fn main()
 {
@@ -57,14 +61,14 @@ fn main()
     // let mut game = TicTacToe::new(5, 5, 4);
     // let mut game = Connect4::new(6, 7, 4);
 
-    let mcts_player = MCTSPlayer::new(3000);
+    let mcts_player = MCTSPlayer::new(15000);
     let rand_player = RandomPlayer {};
     let human_player = HumanPlayer {};
     let minimax_player = MinimaxPlayer::new(None);
 
-    // game.play(&minimax_player, &human_player, true);
+    game.play(&human_player, &mcts_player, true);
 
-    game.benchmark_players(&minimax_player, &mcts_player, 10);
+    // game.benchmark_players(&minimax_player, &mcts_player, 10);
 }
 
 #[allow(dead_code)]
