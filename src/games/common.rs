@@ -1,15 +1,15 @@
-use super::GameState;
-use board::Position;
-
-use petgraph::dot::Dot;
-use petgraph::graph::NodeIndex;
-use petgraph::Graph;
-
 use std::collections::VecDeque;
 use std::fmt::Display;
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
+
+use board::Position;
+use petgraph::dot::Dot;
+use petgraph::graph::NodeIndex;
+use petgraph::Graph;
+
+use super::GameState;
 
 pub mod board;
 

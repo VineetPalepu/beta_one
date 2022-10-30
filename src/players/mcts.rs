@@ -5,10 +5,8 @@ use std::{
 
 use rand::{seq::SliceRandom, thread_rng};
 
-use crate::games::{GameResult, GameState};
-
 use self::arena_tree::{ArenaTree, NodeRef};
-
+use crate::games::{GameResult, GameState};
 use crate::players::{random::RandomPlayer, GamePlayer};
 
 pub struct MCTSPlayer
@@ -188,9 +186,9 @@ where
 
 mod arena_tree
 {
-    use self::arena_vec::ArenaVec;
-
     pub use arena_vec::NodeRef;
+
+    use self::arena_vec::ArenaVec;
 
     pub struct ArenaTree<T>
     {

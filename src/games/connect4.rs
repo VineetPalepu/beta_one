@@ -1,12 +1,13 @@
 use core::panic;
 use std::fmt::{self, Display, Formatter};
 
+use super::common::generate_line;
 use crate::games::{
     common::board::{Board, Cell, Position},
-    GameResult, GameState, Player,
+    GameResult,
+    GameState,
+    Player,
 };
-
-use super::common::generate_line;
 
 #[derive(Clone)]
 pub struct Connect4

@@ -8,7 +8,9 @@ use crate::games::{
         board::{Board, Cell, Position},
         generate_line,
     },
-    GameResult, GameState, Player,
+    GameResult,
+    GameState,
+    Player,
 };
 
 #[derive(Clone)]

@@ -76,13 +76,13 @@ where
 #[cfg(test)]
 mod test
 {
+    use super::minimax;
     use crate::games::{
         common::{board::Position, create_game_tree, tree_to_file},
         tictactoe::{TicTacToe, TicTacToeMove},
-        GameState, Player,
+        GameState,
+        Player,
     };
-
-    use super::minimax;
 
     fn do_move(game: &mut TicTacToe, row: usize, col: usize, player: usize)
     {
