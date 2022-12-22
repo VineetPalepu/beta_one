@@ -1,6 +1,6 @@
 use std::{
     collections::VecDeque,
-    fmt::{self, Display, Formatter},
+    fmt::{self, Display, Formatter}, str::FromStr,
 };
 
 use crate::games::{
@@ -20,6 +20,38 @@ pub struct TicTacToe
     num_to_win: usize,
     open_positions: Vec<Position>,
     last_move: Option<TicTacToeMove>,
+}
+
+impl TicTacToe
+{
+    pub fn ttt_from_str(string: &str) -> TicTacToe
+    {
+        let board = Board::new(3,3);
+        let open_positions = vec![];
+        assert_eq!(string.len(), 10);
+
+        let board_data = string[0..=8];
+
+        for (i, char) in board_data.chars().enumerate()
+        {
+            let row = i / 3;
+            let col = i % 3;
+            board[Position{ row, col }] = match char {
+                '1' => Cell::Piece(1),
+                '2' => Cell::Piece(2),
+                '0' => {
+                    Cell::Empty;
+                    open_positions.push(Position{ row, col });
+                },
+            };
+        }
+
+        let last_move = string.chars().last().unwrap();
+        let last_move = i32::from(last_move);
+        let last_move = Position{row: last_move / 3, col: last_move % 3};
+
+        TicTacToe { board, num_to_win: 3, open_positions, last_move }
+    }
 }
 
 impl TicTacToe
