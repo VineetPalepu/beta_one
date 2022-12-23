@@ -5,7 +5,7 @@ use std::{
 
 use crate::games::Player;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Board<T>
 {
     data: Vec<T>,
@@ -73,7 +73,7 @@ impl<T> IndexMut<Position> for Board<T>
     }
 }
 
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Cell
 {
     #[default]
@@ -93,7 +93,7 @@ impl Display for Cell
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Position
 {
     pub row: usize,

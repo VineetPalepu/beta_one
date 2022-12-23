@@ -1,6 +1,6 @@
 use std::{
-    collections::VecDeque,
-    fmt::{self, Display, Formatter}, str::FromStr,
+    fmt::{self, Display, Formatter},
+    str::FromStr,
 };
 
 use crate::games::{
@@ -8,12 +8,10 @@ use crate::games::{
         board::{Board, Cell, Position},
         generate_line,
     },
-    GameResult,
-    GameState,
-    Player,
+    GameResult, GameState, Player,
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TicTacToe
 {
     board: Board<Cell>,
@@ -26,31 +24,78 @@ impl TicTacToe
 {
     pub fn ttt_from_str(string: &str) -> TicTacToe
     {
-        let board = Board::new(3,3);
-        let open_positions = vec![];
+        let mut board = Board::new(3, 3);
+        let mut open_positions = vec![];
         assert_eq!(string.len(), 10);
 
-        let board_data = string[0..=8];
+        let board_data = &string[0..=8];
 
         for (i, char) in board_data.chars().enumerate()
         {
             let row = i / 3;
             let col = i % 3;
-            board[Position{ row, col }] = match char {
-                '1' => Cell::Piece(1),
-                '2' => Cell::Piece(2),
-                '0' => {
-                    Cell::Empty;
-                    open_positions.push(Position{ row, col });
+            board[Position { row, col }] = match char
+            {
+                '1' => Cell::Piece(Player(1)),
+                '2' => Cell::Piece(Player(2)),
+                '0' =>
+                {
+                    open_positions.push(Position { row, col });
+                    Cell::Empty
                 },
+                _ => panic!("invalid char"),
             };
         }
 
         let last_move = string.chars().last().unwrap();
-        let last_move = i32::from(last_move);
-        let last_move = Position{row: last_move / 3, col: last_move % 3};
+        let last_move =
+            usize::from_str(&last_move.to_string()).expect("couldn't convert char to integer");
+        let last_move = match last_move
+        {
+            1..=9 =>
+            {
+                let position = Position {
+                    row: (last_move - 1) / 3,
+                    col: (last_move - 1) % 3,
+                };
+                Some(TicTacToeMove {
+                    position,
+                    player: match board[position]
+                    {
+                        Cell::Empty => panic!("last_move shouldn't refer to empty position"),
+                        Cell::Piece(player) => player,
+                    },
+                })
+            },
+            0 => None,
+            _ => panic!("invalid char"),
+        };
 
-        TicTacToe { board, num_to_win: 3, open_positions, last_move }
+        TicTacToe {
+            board,
+            num_to_win: 3,
+            open_positions,
+            last_move,
+        }
+    }
+    pub fn ttt_to_str(&self) -> String
+    {
+        let mut string = String::new();
+        for i in 0..9
+        {
+            string += &match self.board[Position { row: i / 3, col: i % 3 }]
+            {
+                Cell::Empty => "0".to_string(),
+                Cell::Piece(Player(n)) => n.to_string(),
+            };
+        }
+        string += &match self.last_move
+        {
+            Some(ttt_move) => (ttt_move.position.row * 3 + ttt_move.position.col + 1).to_string(),
+            None => "0".to_string(),
+        };
+
+        string
     }
 }
 
@@ -196,7 +241,7 @@ impl Display for TicTacToe
         Ok(())
     }
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct TicTacToeMove
 {
     // TODO: create better public interface or determine if this needs to be public

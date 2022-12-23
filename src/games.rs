@@ -128,7 +128,7 @@ impl Display for GameResult
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Player(usize);
 
 impl Player

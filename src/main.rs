@@ -1,3 +1,4 @@
+use std::env;
 use std::fmt::Display;
 use std::fs::File;
 use std::io::BufWriter;
@@ -36,9 +37,39 @@ use crate::games::Player;
 #[allow(unused_variables, unused_mut)]
 fn main()
 {
-    println!("aslkdjflaskdjflskjdf");
-    let board = TicTacToe::ttt_from_str("0000000000");
-    println!("{board}");
+    let board_string = env::args()
+        .nth(1)
+        .expect("need string to construct tic tac toe board");
+    /*
+    let str1 = "0000000000";
+    let str2 = "1000000001";
+    let str3 = "1000200005";
+    let str4 = "1100200002";
+    let strs = vec![str1, str2, str3, str4];
+
+    for string in strs
+    {
+        let board = TicTacToe::ttt_from_str(string);
+        println!("{board:#?}");
+        println!("--------------------------------")
+    }
+    */
+    let mut game_state = TicTacToe::ttt_from_str(&board_string);
+    //println!("received state:\n{game_state}");
+    match game_state.check_win()
+    {
+        GameResult::InProgress =>
+        {
+            let player = MinimaxPlayer::new(None);
+            let chosen_move = player.choose_move::<TicTacToe>(&game_state);
+            game_state.do_move(chosen_move);
+
+            //println!("new state:\n{game_state}");
+            println!("{}", game_state.ttt_to_str());
+        },
+        GameResult::Draw => println!("DRAW"),
+        GameResult::Win(player) => println!("{player}"),
+    }
 }
 
 #[allow(dead_code)]
