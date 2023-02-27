@@ -88,7 +88,7 @@ impl Display for Cell
         match self
         {
             Cell::Empty => write!(f, "-"),
-            Cell::Piece(p) => write!(f, "{}", p.0),
+            Cell::Piece(p) => write!(f, "{}", p.id),
         }
     }
 }

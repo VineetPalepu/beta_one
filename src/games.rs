@@ -1,8 +1,8 @@
 use std::fmt::{self, Display, Formatter};
 
 use crate::players::GamePlayer;
-
 pub mod connect4;
+pub mod poker;
 pub mod tictactoe;
 
 pub mod common;
@@ -40,9 +40,9 @@ pub trait GameState: Clone + Display
             // Let the current player pick their move
             let selected_move = match self.player_to_move()
             {
-                Player(1) => p1.choose_move(&self),
-                Player(2) => p2.choose_move(&self),
-                Player(n) =>
+                Player { id: 1 } => p1.choose_move(&self),
+                Player { id: 2 } => p2.choose_move(&self),
+                Player { id: n } =>
                 {
                     panic!("invalid player: {}", n)
                 },
@@ -134,14 +134,17 @@ impl Display for GameResult
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Player(usize);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Player
+{
+    id: usize,
+}
 
 impl Player
 {
     pub fn new(id: usize) -> Player
     {
-        Player(id)
+        Player { id }
     }
 }
 
@@ -149,6 +152,6 @@ impl Display for Player
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
-        write!(f, "Player {}", self.0)
+        write!(f, "Player {}", self.id)
     }
 }

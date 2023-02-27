@@ -60,16 +60,16 @@ impl GameState for Connect4
         {
             Some(last_move) =>
             {
-                if last_move.player == Player(1)
+                if last_move.player.id == 1
                 {
-                    Player(2)
+                    Player { id: 2 }
                 }
                 else
                 {
-                    Player(1)
+                    Player { id: 1 }
                 }
             },
-            None => Player(1),
+            None => Player { id: 1 },
         }
     }
 
